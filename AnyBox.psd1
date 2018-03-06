@@ -110,7 +110,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'https://www.donaldmellenbruch.com/post/introducing-powershell-anybox'
+        ReleaseNotes = 'https://www.donaldmellenbruch.com/post/introducing-the-anybox'
 
     } # End of PSData hashtable
 
