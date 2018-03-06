@@ -119,7 +119,7 @@ function Show-AnyBox
 		[ValidateNotNullOrEmpty()]
 		[string]$FontFamily = 'Segoe UI',
 		[ValidateScript({$_ -gt 0})]
-		[uint16]$FontSize = 12,
+		[uint16]$FontSize = 13,
 		[ValidateNotNullOrEmpty()]
 		[string]$FontColor = 'Black',
 		[string]$BackgroundColor,
@@ -129,9 +129,9 @@ function Show-AnyBox
 		[System.Windows.ResizeMode]$ResizeMode = 'CanMinimize',
 		[switch]$NoResize,
 		[ValidateScript({$_ -gt 0})]
-		[uint16]$MinHeight = 100,
+		[uint16]$MinHeight = 50,
 		[ValidateScript({$_ -gt 0})]
-		[uint16]$MinWidth = 100,
+		[uint16]$MinWidth = 50,
 		[switch]$Topmost,
 		[switch]$HideTaskbarIcon,
 		[uint32]$Timeout,
@@ -151,25 +151,29 @@ function Show-AnyBox
 
 	$form = @{'Result'=@{}} # [hashtable]::Synchronized(@{ 'Result' = @{})
 
-	if ($Buttons) {
-		$Buttons | ForEach-Object { $form.Result.Add($_, $false) }
-
-		[string[]]$action_btns = @()
+	[string[]]$action_btns = @()
 	
-		if ($GridData -and -not $HideGridSearch) {
-			$action_btns += @('Explore', 'Save')
-		}
+	if ($GridData -and -not $HideGridSearch) {
+		$action_btns += @('Explore', 'Save')
+	}
 
-		if ($ShowCopyButton -and $Message) {
-			$action_btns += 'Copy'
-		}
+	if ($ShowCopyButton -and $Message) {
+		$action_btns += 'Copy'
+	}
 
-		if ($action_btns.Length -gt 0) {
-			[System.Collections.ArrayList]$Buttons = [System.Collections.ArrayList]$Buttons
-			$Buttons.InsertRange(1, $action_btns)
+	if ($Buttons -or $action_btns) {
+		if (-not $Buttons) {
+			$Buttons = @($action_btns)
 		}
+		else {
+			$Buttons | ForEach-Object { $form.Result.Add($_, $false) }
 
-		$Buttons = $Buttons | Select-Object -Unique
+			if ($action_btns) {
+				[System.Collections.ArrayList]$Buttons = [System.Collections.ArrayList]$Buttons
+				$Buttons.InsertRange(1, $action_btns)
+			}
+			$Buttons = $Buttons | Select-Object -Unique
+		}
 	}
 
 	[xml]$xaml = @"
@@ -190,13 +194,16 @@ function Show-AnyBox
 	$form.Window.MaxWidth = [System.Windows.SystemParameters]::WorkArea.Width
 	$form.Window.MaxHeight = [System.Windows.SystemParameters]::WorkArea.Height
 
+	
+
+	$form.Window.WindowStyle = $WindowStyle
 	if ($WindowStyle -eq 'None') {
 		$form.Window.BorderBrush = 'Black'
 		$form.Window.BorderThickness = '1'
 	}
 
-	if ($WindowStyle) { $form.Window.WindowStyle = $WindowStyle }
-	if ($ResizeMode) { $form.Window.ResizeMode = $ResizeMode }
+	$form.Window.ResizeMode = $ResizeMode
+	
 	if ($Title) { $form.Window.Title = $Title }
 	if ($FontColor) { $form.Window.Foreground = $FontColor }
 	if ($BackgroundColor) {
@@ -218,8 +225,12 @@ function Show-AnyBox
 		WindowStyle = 'None'
 		ResizeMode = 'NoResize'
 		NoResize = $true
+		MinHeight = 25
+		MinWidth = 25
 		HideTaskbarIcon = $true
 		Topmost = $true
+		Buttons = 'OK'
+		DefaultButton = 'OK'
 		ParentWindow = $form.Window
 	}
 
@@ -291,6 +302,11 @@ function Show-AnyBox
 	if (($txtMsg = New-TextBlock -text $($Message -join [environment]::NewLine) -name 'txt_Message')) {
 		$form.stack.AddChild($txtMsg)
 	}
+
+	if ($GridData -and -not $HideGridSearch) {
+		$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
+		$form.stack.AddChild($gridMsg)
+	}
 	
 	# Add prompt-message textblocks and input textboxes.
 	for ($i = 0; $i -lt $Prompt.Length; $i++) {
@@ -325,7 +341,7 @@ function Show-AnyBox
 			$inBox.Name = "Input_$i"
 			$inBox.Margin = "0, 10, 0, 0"
 			$inBox.Content = $Prompt[$i].Message
-			$inBox.IsChecked = [bool][int]$Prompt[$i].DefaultValue
+			$inBox.IsChecked = $($Prompt[$i].DefaultValue -eq [bool]::TrueString)
 			$inBox.HorizontalAlignment = $ContentAlignment
 			$inBox.HorizontalContentAlignment = 'Left'
 			# $inBox.Foreground = $PowerTools.Theme.TextColor
@@ -380,7 +396,7 @@ function Show-AnyBox
 				$onClick += "start '$($Prompt[$i].DefaultValue)'"
 			}
 			else {
-				$onClick = "start '$($Prompt[$i].Message)'"
+				$onClick += "start '$($Prompt[$i].Message)'"
 			}
 			$inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
 		}
@@ -528,10 +544,10 @@ function Show-AnyBox
 		$dataGrid.HorizontalContentAlignment = 'Stretch'
 		$dataGrid.VerticalContentAlignment = 'Stretch'
 		$dataGrid.VerticalAlignment = 'Stretch'
-		# $dataGrid.MaxHeight = $form.Window.MaxHeight * 0.75 [System.Windows.SystemParameters]::WorkArea.Width
-		# $dataGrid.MaxWidth = $form.Window.MaxWidth * 0.75
-		$dataGrid.MaxWidth = $form.Window.MaxWidth - 10
-		$dataGrid.MaxHeight = $form.Window.MaxHeight - 50 * $form.stack.Children.Count
+		$dataGrid.MaxHeight = $form.Window.MaxHeight * 0.75 # [System.Windows.SystemParameters]::WorkArea.Width
+		$dataGrid.MaxWidth = $form.Window.MaxWidth * 0.75
+		# $dataGrid.MaxWidth = $form.Window.MaxWidth - 10
+		# $dataGrid.MaxHeight = $form.Window.MaxHeight - 50 * $form.stack.Children.Count
 		$dataGrid.HeadersVisibility = 'Column'
 		$dataGrid.AlternatingRowBackground = 'WhiteSmoke'
 		$dataGrid.CanUserSortColumns = $true
@@ -547,8 +563,8 @@ function Show-AnyBox
 			[scriptblock]$filterGrid = {
 				if (-not $form.filterText.Text) {
 					$form.data_grid.ItemsSource = $GridData # | ConvertTo-DataTable
-					if ($form.ContainsKey('txt_Message') -and $form['txt_Message'].Visibility -eq 'Visible') {
-						$form['txt_Message'].Text = '{0} Results' -f $GridData.Count
+					if ($form.ContainsKey('txt_Grid') -and $form['txt_Grid'].Visibility -eq 'Visible') {
+						$form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
 					}
 				}
 				elseif ($form.filterBy.SelectedItem) {
@@ -587,8 +603,8 @@ function Show-AnyBox
 							$form.data_grid.ItemsSource = $GridData
 						}
 					}
-					if ($form.ContainsKey('txt_Message') -and $form['txt_Message'].Visibility -eq 'Visible') {
-						$form['txt_Message'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $GridData.Count
+					if ($form.ContainsKey('txt_Grid') -and $form['txt_Grid'].Visibility -eq 'Visible') {
+						$form['txt_Grid'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $GridData.Count
 					}
 				}
 			}
@@ -713,7 +729,7 @@ function Show-AnyBox
 						break
 					}
 					elseif ($form["Input_$i"] -is [System.Windows.Controls.TextBlock] -and $form["Input_$i"].Foreground.Color -ne '#FF000080') { # -ne Navy
-						$null = Show-AnyBox @childWinParams -Message "Please click the link."
+						$null = Show-AnyBox @childWinParams -Message $("Please click the link '{0}'." -f $form["Input_$i"].Text)
 						$valid = $false
 						break
 					}
