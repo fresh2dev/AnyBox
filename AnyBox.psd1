@@ -15,7 +15,7 @@ RootModule = 'AnyBox.psm1'
 ModuleVersion = '0.1'
 
 # Supported PSEditions
-CompatiblePSEditions = 'Desktop'
+# CompatiblePSEditions = 'Desktop'
 
 # ID used to uniquely identify this module
 GUID = '2d4d8fd0-36c3-48e9-b6ac-48df0f9bc7ab'
