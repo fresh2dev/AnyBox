@@ -1,23 +1,3 @@
-Add-Type -TypeDefinition @"
-namespace AnyBox {
-	public enum InputType {
-		None, Text, FileOpen, FileSave, Checkbox, Password, Date, Link
-	};
-
-	public class Prompt
-	{
-		public string Message;
-		public string DefaultValue;
-		public InputType InputType = InputType.Text;
-		public int LineHeight = 1;
-		public bool ReadOnly = false;
-		public string[] ValidateSet;
-		public bool ValidateNotEmpty = false;
-		public System.Management.Automation.ScriptBlock ValidateScript;
-	}
-}
-"@
-
 function Show-AnyBox
 {
 	<#
@@ -180,9 +160,25 @@ function Show-AnyBox
 <Window
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	AllowsTransparency="False" WindowStartupLocation="CenterScreen" SizeToContent="WidthAndHeight" ShowActivated="True"
-	Topmost="$($Topmost -as [bool])" ShowInTaskbar="$(-not ($HideTaskbarIcon -as [bool]))" MinWidth="$MinWidth" MinHeight="$MinHeight">
+	Topmost="$($Topmost -as [bool])" ShowInTaskbar="$(-not ($HideTaskbarIcon -as [bool]))" MinWidth="$MinWidth" MinHeight="$MinHeight"
+	WindowStyle="$WindowStyle" WindowState="$WindowState" ResizeMode="$ResizeMode">
 	<Border Name="padBorder" Padding="10, 0, 10, 10">
-		<StackPanel Name="stack" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+		<Grid Name="grid" Width="Auto" Height="Auto" Background="LightSteelBlue" ShowGridLines="True">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+
+			<StackPanel Name="highStack" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+
+			<DataGrid Name='data_grid' Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Visibility="Collapsed"/>
+
+			<StackPanel Name="lowStack" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+		</Grid>
 	</Border>
 </Window>
 "@
@@ -191,19 +187,14 @@ function Show-AnyBox
 	$xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
 	$xaml = $null
 
-	$form.Window.MaxWidth = [System.Windows.SystemParameters]::WorkArea.Width
-	$form.Window.MaxHeight = [System.Windows.SystemParameters]::WorkArea.Height
+	# $form.Window.MaxWidth = [System.Windows.SystemParameters]::WorkArea.Width
+	# $form.Window.MaxHeight = [System.Windows.SystemParameters]::WorkArea.Height
 
-	
-
-	$form.Window.WindowStyle = $WindowStyle
 	if ($WindowStyle -eq 'None') {
 		$form.Window.BorderBrush = 'Black'
 		$form.Window.BorderThickness = '1'
 	}
 
-	$form.Window.ResizeMode = $ResizeMode
-	
 	if ($Title) { $form.Window.Title = $Title }
 	if ($FontColor) { $form.Window.Foreground = $FontColor }
 	if ($BackgroundColor) {
@@ -268,7 +259,7 @@ function Show-AnyBox
 			$img.MaxHeight = $img.Source.Height
 			$img.HorizontalAlignment = 'Center'
 			$img.VerticalAlignment = 'Center'
-			$form.stack.AddChild($img)
+			$form.highStack.AddChild($img)
 		}
 	}
 
@@ -307,14 +298,14 @@ function Show-AnyBox
 		$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
 		$form.stack.AddChild($gridMsg)
 	}
-	
+
 	# Add prompt-message textblocks and input textboxes.
 	for ($i = 0; $i -lt $Prompt.Length; $i++) {
 
 		$inPanel = $null
 
 		if ($Prompt[$i].ValidateSet) { # Combo box
-			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
+			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)){
 				$form.stack.AddChild($inPrmpt)	
 			}
 			# Combo box
@@ -335,7 +326,8 @@ function Show-AnyBox
 				$inBox.SelectedIndex = 0
 			}
 		}
-		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Checkbox) {
+		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Checkbox)
+		{
 			# Check box
 			$inBox = New-Object System.Windows.Controls.CheckBox
 			$inBox.Name = "Input_$i"
@@ -346,9 +338,10 @@ function Show-AnyBox
 			$inBox.HorizontalContentAlignment = 'Left'
 			# $inBox.Foreground = $PowerTools.Theme.TextColor
 		}
-		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Password) {
+		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Password)
+		{
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
-				$form.stack.AddChild($inPrmpt)	
+				$form.highStack.AddChild($inPrmpt)
 			}
 			# Password box
 			$inBox = New-Object System.Windows.Controls.PasswordBox
@@ -364,10 +357,11 @@ function Show-AnyBox
 			$inBox.FontSize = $FontSize
 			$inBox.Background = 'WhiteSmoke'
 		}
-		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Date) {
+		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Date)
+		{
 			# Date picker
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
-				$form.stack.AddChild($inPrmpt)	
+				$form.highStack.AddChild($inPrmpt)
 			}
 			$inBox = New-Object System.Windows.Controls.DatePicker
 			$inBox.Name = "Input_$i"
@@ -382,7 +376,8 @@ function Show-AnyBox
 			$inBox.Text = $Prompt[$i].DefaultValue
 			$inBox.Background = 'WhiteSmoke'
 		}
-		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Link) {
+		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Link)
+		{
 			# Hyperlink
 			$inBox = New-TextBlock -text $Prompt[$i].Message
 			$inBox.Name = "Input_$i"
@@ -400,10 +395,11 @@ function Show-AnyBox
 			}
 			$inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
 		}
-		else {
+		else
+		{
 			# Text box
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) { # "Prompt_$i")) {
-				$form.stack.AddChild($inPrmpt)	
+				$form.highStack.AddChild($inPrmpt)
 			}
 			$inBox = New-Object System.Windows.Controls.TextBox
 			$inBox.Name = "Input_$i"
@@ -425,14 +421,16 @@ function Show-AnyBox
 				$inBox.Text = $Prompt[$i].DefaultValue
 			}
 
-			if ($Prompt[$i].LineHeight -gt 1) {
+			if ($Prompt[$i].LineHeight -gt 1)
+			{
 				$inBox.AcceptsReturn = $true
 				$inBox.TextWrapping = 'Wrap'
 				$inBox.MinWidth = 75
 				$inBox.MaxHeight = 25 * $Prompt[$i].LineHeight
 				$inBox.Height = $inBox.MaxHeight
 			}
-			else {
+			else
+			{
 				$inBox.MaxHeight = 25 * @($Prompt[$i].DefaultValue -split "`n").Count
 				$inBox.Height = $inBox.MaxHeight
 			}
@@ -457,7 +455,8 @@ function Show-AnyBox
 				$fileBtn.ToolTip = 'Browse'
 				$fileBtn.Content = '...'
 
-				if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileOpen) {
+				if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileOpen)
+				{
 					$fileBtn.add_Click({
 						[string]$inBoxName = $_.Source.Name.Replace('btn_','')
 						$opnWin = New-Object Microsoft.Win32.OpenFileDialog
@@ -473,7 +472,8 @@ function Show-AnyBox
 						}
 					})
 				}
-				else { # if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
+				else
+				{ # if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
 					$fileBtn.add_Click({
 						[string]$inBoxName = $_.Source.Name.Replace('btn_','')
 						$savWin = New-Object Microsoft.Win32.SaveFileDialog
@@ -501,12 +501,12 @@ function Show-AnyBox
 			$inBox.IsEnabled = $false
 			# $inBox.IsReadOnlyCaretVisible = $false
 		}
-		
+
 		if ($inPanel) {
-			$form.stack.AddChild($inPanel)
+			$form.highStack.AddChild($inPanel)
 		}
 		else {
-			$form.stack.AddChild($inBox)
+			$form.highStack.AddChild($inBox)
 		}
 
 		$form.Add($inBox.Name, $inBox)
@@ -514,10 +514,21 @@ function Show-AnyBox
 		$inBox = $null
 	}
 
-	if ($GridData.Length -gt 0) {
-		$dataGrid = New-Object System.Windows.Controls.DataGrid
-		
-		$dataGrid.Name = 'data_grid'
+	# Add comment textblocks.
+	if (($txtMsg = New-TextBlock -text $($Comment -join [environment]::NewLine) -name 'txt_Explain')) {
+		$txtMsg.FontStyle = 'Italic'
+		$txtMsg.FontWeight = 'Normal'
+		$form.highStack.AddChild($txtMsg)
+	}
+
+	if ($form.ContainsKey('GridData'))
+	{
+		# $dataGrid = New-Object System.Windows.Controls.DataGrid
+		# $dataGrid.Name = 'data_grid'
+
+		$dataGrid = $form['data_grid']
+
+		$dataGrid.Visibility = 'Visible'
 
 		if ($SelectionMode -like 'Multi*') {
 			$dataGrid.SelectionMode = 'Extended'
@@ -544,10 +555,8 @@ function Show-AnyBox
 		$dataGrid.HorizontalContentAlignment = 'Stretch'
 		$dataGrid.VerticalContentAlignment = 'Stretch'
 		$dataGrid.VerticalAlignment = 'Stretch'
-		$dataGrid.MaxHeight = $form.Window.MaxHeight * 0.75 # [System.Windows.SystemParameters]::WorkArea.Width
-		$dataGrid.MaxWidth = $form.Window.MaxWidth * 0.75
-		# $dataGrid.MaxWidth = $form.Window.MaxWidth - 10
-		# $dataGrid.MaxHeight = $form.Window.MaxHeight - 50 * $form.stack.Children.Count
+		# $dataGrid.MaxHeight = [System.Windows.SystemParameters]::WorkArea.Height - 250
+		# $dataGrid.MaxWidth = $form.Window.MaxWidth - 20 # 10px border on each side.
 		$dataGrid.HeadersVisibility = 'Column'
 		$dataGrid.AlternatingRowBackground = 'WhiteSmoke'
 		$dataGrid.CanUserSortColumns = $true
@@ -737,8 +746,8 @@ function Show-AnyBox
 			}
 			$valid
 		}
-		
-		$btn_per_row = [math]::Ceiling($Buttons.Count / ([double]$ButtonRows))
+
+		[int]$btn_per_row = [math]::Ceiling($Buttons.Count / ([double]$ButtonRows))
 
 		[uint16]$c = 0
 
@@ -809,12 +818,12 @@ function Show-AnyBox
 						}})
 					}
 
-					if (-not $NoKeyNav) { 
+					if (-not $NoKeyNav) {
 						if ($DefaultButton -eq $Buttons[$c]) {
-							$btn.IsDefault = $true 
+							$btn.IsDefault = $true
 						}
 						elseif($CancelButton -eq $Buttons[$c]) {
-							$btn.IsCancel = $true 
+							$btn.IsCancel = $true
 						}
 					}
 				}
@@ -824,7 +833,7 @@ function Show-AnyBox
 				$c++
 			}
 
-			$form.stack.AddChild($btnStack)
+			$form.lowStack.AddChild($btnStack)
 		}
 	}
 
@@ -869,21 +878,22 @@ function Show-AnyBox
 			}
 		}
 	})
-	
+
 	$form.Window.add_ContentRendered({
 		$form.Window.SizeToContent = 'Manual'
 
 		if ($NoResize) {
 			$form.Window.MinWidth = $form.Window.Width
 			$form.Window.MaxWidth = $form.Window.Width
+			# No vertical resize.
+			$form.Window.MinHeight = $form.Window.Height
+			$form.Window.MaxHeight = $form.Window.Height
 		}
-		# No vertical resize.
-		$form.Window.MinHeight = $form.Window.Height
-		$form.Window.MaxHeight = $form.Window.Height
 
 		$form.Window.Opacity = 1.0
-		
-		if ($Timeout -and $Timeout -gt 0) {
+
+		if ($Timeout -and $Timeout -gt 0)
+		{
 			$form.Result.Add('TimedOut', $false)
 
 			$timer = New-Object System.Windows.Threading.DispatcherTimer
@@ -926,7 +936,7 @@ function Show-AnyBox
 					$form.Result.Add($_.Name, $_.Value.SecurePassword)
 				}
 				elseif ($_.Value -is [System.Windows.Controls.CheckBox]) {
-					$form.Result.Add($_.Name, $_.Value.IsChecked)	
+					$form.Result.Add($_.Name, $_.Value.IsChecked)
 				}
 				elseif ($_.Value -is [System.Windows.Controls.ComboBox]) {
 					$form.Result.Add($_.Name, $_.Value.SelectedItem)
