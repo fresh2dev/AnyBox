@@ -49,7 +49,7 @@ function Show-AnyBox
 		The resize mode of the window. Note that this parameter also affects whether the minimize and maximize
 		buttons are present. Due to the design of AnyBox, only horizontal resizing is allowed.
 	.PARAMETER NoResize
-		A simpler way to prevent window resizing without affecting the appearance of the system buttons.
+		A simpler way to prevent window resizing.
 	.PARAMETER MinHeight
 		The minimum height of the resulting window, in pixels.
 	.PARAMETER MinWidth
@@ -123,8 +123,8 @@ function Show-AnyBox
 		[string]$SelectionMode = 'SingleCell',
 		[switch]$HideGridSearch
 	)
-	
-	if ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle) {
+
+	if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
 		# No minimize button
 		$ResizeMode = 'NoResize'
 	}
@@ -132,7 +132,7 @@ function Show-AnyBox
 	$form = @{'Result'=@{}} # [hashtable]::Synchronized(@{ 'Result' = @{})
 
 	[string[]]$action_btns = @()
-	
+
 	if ($GridData -and -not $HideGridSearch) {
 		$action_btns += @('Explore', 'Save')
 	}
@@ -161,9 +161,9 @@ function Show-AnyBox
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	AllowsTransparency="False" WindowStartupLocation="CenterScreen" SizeToContent="WidthAndHeight" ShowActivated="True"
 	Topmost="$($Topmost -as [bool])" ShowInTaskbar="$(-not ($HideTaskbarIcon -as [bool]))" MinWidth="$MinWidth" MinHeight="$MinHeight"
-	WindowStyle="$WindowStyle" WindowState="$WindowState" ResizeMode="$ResizeMode">
+	WindowStyle="$WindowStyle" ResizeMode="$ResizeMode">
 	<Border Name="padBorder" Padding="10, 0, 10, 10">
-		<Grid Name="grid" Width="Auto" Height="Auto" Background="LightSteelBlue" ShowGridLines="True">
+		<Grid Name="grid" Width="Auto" Height="Auto" ShowGridLines="False">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
@@ -186,9 +186,6 @@ function Show-AnyBox
 	$form.Window = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xaml))
 	$xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
 	$xaml = $null
-
-	# $form.Window.MaxWidth = [System.Windows.SystemParameters]::WorkArea.Width
-	# $form.Window.MaxHeight = [System.Windows.SystemParameters]::WorkArea.Height
 
 	if ($WindowStyle -eq 'None') {
 		$form.Window.BorderBrush = 'Black'
@@ -288,15 +285,15 @@ function Show-AnyBox
 
 		return $null
 	}
-	
+
 	# Add message textblocks.
 	if (($txtMsg = New-TextBlock -text $($Message -join [environment]::NewLine) -name 'txt_Message')) {
-		$form.stack.AddChild($txtMsg)
+		$form.highStack.AddChild($txtMsg)
 	}
 
 	if ($GridData -and -not $HideGridSearch) {
 		$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
-		$form.stack.AddChild($gridMsg)
+		$form.highStack.AddChild($gridMsg)
 	}
 
 	# Add prompt-message textblocks and input textboxes.
@@ -306,7 +303,7 @@ function Show-AnyBox
 
 		if ($Prompt[$i].ValidateSet) { # Combo box
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)){
-				$form.stack.AddChild($inPrmpt)	
+				$form.highStack.AddChild($inPrmpt)	
 			}
 			# Combo box
 			$inBox = New-Object System.Windows.Controls.ComboBox
@@ -416,7 +413,7 @@ function Show-AnyBox
 			$inBox.FontSize = $FontSize
 			$inBox.TextWrapping = 'NoWrap'
 			$inBox.Background = 'WhiteSmoke'
-			
+
 			if ($Prompt[$i].DefaultValue -ne $null) {
 				$inBox.Text = $Prompt[$i].DefaultValue
 			}
@@ -434,7 +431,7 @@ function Show-AnyBox
 				$inBox.MaxHeight = 25 * @($Prompt[$i].DefaultValue -split "`n").Count
 				$inBox.Height = $inBox.MaxHeight
 			}
-			
+
 			$inBox.add_GotFocus({$_.Source.SelectAll()})
 
 			##############################################
@@ -442,7 +439,7 @@ function Show-AnyBox
 			if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileOpen -or $Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
 				$inPanel = New-Object System.Windows.Controls.DockPanel
 				$inPanel.LastChildFill = $true
-						
+
 				$fileBtn = New-Object System.Windows.Controls.Button
 				$fileBtn.Name = "btn_Input_$i"
 				$fileBtn.Height = 25
@@ -451,7 +448,7 @@ function Show-AnyBox
 
 				$inBox.Margin = "0, 5, 0, 0"
 				$inBox.Padding = "0, 0, $($fileBtn.Width.ToString()), 0"
-				
+
 				$fileBtn.ToolTip = 'Browse'
 				$fileBtn.Content = '...'
 
@@ -521,12 +518,14 @@ function Show-AnyBox
 		$form.highStack.AddChild($txtMsg)
 	}
 
-	if ($form.ContainsKey('GridData'))
+	if ($GridData)
 	{
 		# $dataGrid = New-Object System.Windows.Controls.DataGrid
 		# $dataGrid.Name = 'data_grid'
 
 		$dataGrid = $form['data_grid']
+
+		$dataGrid.ItemsSource = $GridData
 
 		$dataGrid.Visibility = 'Visible'
 
@@ -536,14 +535,14 @@ function Show-AnyBox
 		else {
 			$dataGrid.SelectionMode = 'Single'
 		}
-		
+
 		if ($SelectionMode -like '*Row') {
 			$dataGrid.SelectionUnit = 'FullRow'
 		}
 		else {
 			$dataGrid.SelectionUnit = 'Cell'
 		}
-		
+
 		$dataGrid.ClipboardCopyMode = 'ExcludeHeader'
 		$dataGrid.Margin = "0, 10, 0, 0"
 		$dataGrid.IsReadOnly = $true
@@ -551,7 +550,6 @@ function Show-AnyBox
 		$dataGrid.VerticalScrollBarVisibility = 'Auto'
 		$dataGrid.HorizontalScrollBarVisibility = 'Auto'
 		$dataGrid.HorizontalAlignment = 'Stretch'
-		# $dataGrid.ColumnWidth = '80'
 		$dataGrid.HorizontalContentAlignment = 'Stretch'
 		$dataGrid.VerticalContentAlignment = 'Stretch'
 		$dataGrid.VerticalAlignment = 'Stretch'
@@ -565,13 +563,12 @@ function Show-AnyBox
 		$dataGrid.CanUserReorderColumns = $false
 		$dataGrid.CanUserDeleteRows = $true
 		$dataGrid.GridLinesVisibility = 'All'
-		$dataGrid.ItemsSource = $GridData # | ConvertTo-DataTable
 		$dataGrid.FontSize = 12
 
 		if (-not $HideGridSearch) {
 			[scriptblock]$filterGrid = {
 				if (-not $form.filterText.Text) {
-					$form.data_grid.ItemsSource = $GridData # | ConvertTo-DataTable
+					$form.data_grid.ItemsSource = $GridData
 					if ($form.ContainsKey('txt_Grid') -and $form['txt_Grid'].Visibility -eq 'Visible') {
 						$form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
 					}
@@ -629,7 +626,7 @@ function Show-AnyBox
 			$fltrBy.VerticalAlignment = 'Center'
 			$fltrBy.VerticalContentAlignment = 'Center'
 			$fltrBy.add_SelectionChanged({& $filterGrid})
-			
+
 			$fltrMatch = New-Object System.Windows.Controls.ComboBox
 			$fltrMatch.Name = 'filterMatch'
 			$fltrMatch.FontSize = $FontSize
@@ -671,25 +668,25 @@ function Show-AnyBox
 			$form.Add($fltrBy.Name, $fltrBy)
 			$form.Add($fltrMatch.Name, $fltrMatch)
 			$form.Add($fltrBox.Name, $fltrBox)
-			$form.stack.AddChild($fltrPanel)
+			$form.highStack.AddChild($fltrPanel)
 		}
 		
-		$form.stack.AddChild($dataGrid)
-		$form.Add($dataGrid.Name, $dataGrid)
+		# $form.highStack.AddChild($dataGrid)
+		# $form.Add($dataGrid.Name, $dataGrid)
 	}
 
 	# Add comment textblocks.
 	if (($txtMsg = New-TextBlock -text $($Comment -join [environment]::NewLine) -name 'txt_Explain')) {
 		$txtMsg.FontStyle = 'Italic'
 		$txtMsg.FontWeight = 'Normal'
-		$form.stack.AddChild($txtMsg)
+		$form.highStack.AddChild($txtMsg)
 	}
 	
 	if ($Timeout -and $Timeout -gt 0 -and $Countdown) {
 		# Create countdown textblock.
 		$txtTime = New-TextBlock '---'
 		$txtTime.Name = 'txt_Countdown'
-		$form.stack.AddChild($txtTime)
+		$form.highStack.AddChild($txtTime)
 		$form.Add($txtTime.Name, $txtTime)
 	}
 
@@ -844,7 +841,7 @@ function Show-AnyBox
 			$form.Window.Owner.Opacity = 0.4
 		}
 
-		if ($form.ContainsKey('data_grid')) {
+		if ($GridData) {
 			if (-not $HideGridSearch) {
 				$form.filterBy.ItemsSource = @($form.data_grid.Columns.Header)
 				$form.filterBy.SelectedIndex = 0
@@ -854,11 +851,7 @@ function Show-AnyBox
 				$_.CanUserSort = $true
 				$_.SortMemberPath = $_.Header.ToString()
 				$_.SortDirection = "Ascending"
-				$_.Width = $_.ActualWidth # [double]::NaN
 			}
-
-			$form.data_grid.Height = $form.data_grid.ActualHeight
-			$form.data_grid.Width = $form.data_grid.ActualWidth
 		}
 	
 		if ($Prompt) {
@@ -881,14 +874,6 @@ function Show-AnyBox
 
 	$form.Window.add_ContentRendered({
 		$form.Window.SizeToContent = 'Manual'
-
-		if ($NoResize) {
-			$form.Window.MinWidth = $form.Window.Width
-			$form.Window.MaxWidth = $form.Window.Width
-			# No vertical resize.
-			$form.Window.MinHeight = $form.Window.Height
-			$form.Window.MaxHeight = $form.Window.Height
-		}
 
 		$form.Window.Opacity = 1.0
 
@@ -914,7 +899,7 @@ function Show-AnyBox
 
 			$timer.Start()
 		}
-		
+
 		$form.Window.Activate()
 	})
 
@@ -947,7 +932,7 @@ function Show-AnyBox
 			}
 			elseif ($_.Name -eq 'data_grid' -and ($form['data_grid'].SelectedCells.Count -gt 0 -or $form['data_grid'].SelectedItems.Count -gt 0)) {
 				$selection = $null
-				
+
 				switch ($SelectionMode)
 				{
 					'SingleCell' {
@@ -963,7 +948,7 @@ function Show-AnyBox
 						[psobject[]]$selection = @($form['data_grid'].SelectedItems)
 					}
 				}
-				
+
 				$form.Result.Add('grid_select', $selection)
 			}
 		}
