@@ -47,7 +47,7 @@ function Show-AnyBox
 		The window style. caSee https://msdn.microsoft.com/en-us/library/system.windows.window.windowstyle(v=vs.110).aspx.
 	.PARAMETER ResizeMode
 		The resize mode of the window. Note that this parameter also affects whether the minimize and maximize
-		buttons are present. Due to the design of AnyBox, only horizontal resizing is allowed.
+		buttons are present.
 	.PARAMETER NoResize
 		A simpler way to prevent window resizing.
 	.PARAMETER MinHeight
@@ -119,6 +119,7 @@ function Show-AnyBox
 		[System.Windows.Window]$ParentWindow = $null,
 
 		[array]$GridData,
+		[switch]$GridAsList,
 		[ValidateSet('SingleCell', 'MultiCell', 'SingleRow', 'MultiRow')]
 		[string]$SelectionMode = 'SingleCell',
 		[switch]$HideGridSearch
@@ -265,13 +266,10 @@ function Show-AnyBox
 			$txtBlk = New-Object System.Windows.Controls.TextBlock
 			$txtBlk.Text = $text
 			$txtBlk.FontFamily = $FontFamily
-			$txtBlk.VerticalAlignment = 'Center'
-			# $txtBlk.FontWeight = 'SemiBold'
 			$txtBlk.TextWrapping = 'Wrap'
 			$txtBlk.FontSize = $FontSize
-			# $txtBlk.Foreground = $PowerTools.Theme.TextColor
-
 			$txtBlk.Margin = "0, 10, 0, 0"
+			$txtBlk.VerticalAlignment = 'Center'
 			$txtBlk.HorizontalAlignment = $ContentAlignment
 			$txtBlk.TextAlignment = $ContentAlignment
 
@@ -291,19 +289,26 @@ function Show-AnyBox
 		$form.highStack.AddChild($txtMsg)
 	}
 
-	if ($GridData -and -not $HideGridSearch) {
-		$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
-		$form.highStack.AddChild($gridMsg)
-	}
-
 	# Add prompt-message textblocks and input textboxes.
 	for ($i = 0; $i -lt $Prompt.Length; $i++) {
 
 		$inPanel = $null
 
-		if ($Prompt[$i].ValidateSet) { # Combo box
-			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)){
-				$form.highStack.AddChild($inPrmpt)	
+		if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+			$inPanel = New-Object System.Windows.Controls.DockPanel
+			$inPanel.LastChildFill = $true
+		}
+
+		if ($Prompt[$i].ValidateSet)
+		{	# Combo box
+			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
+				if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+					$inPrmpt.Margin = "0, 10, 5, 0"
+					$inPanel.AddChild($inPrmpt)
+				}
+				else {
+					$form.highStack.AddChild($inPrmpt)
+				}
 			}
 			# Combo box
 			$inBox = New-Object System.Windows.Controls.ComboBox
@@ -333,12 +338,17 @@ function Show-AnyBox
 			$inBox.IsChecked = $($Prompt[$i].DefaultValue -eq [bool]::TrueString)
 			$inBox.HorizontalAlignment = $ContentAlignment
 			$inBox.HorizontalContentAlignment = 'Left'
-			# $inBox.Foreground = $PowerTools.Theme.TextColor
 		}
 		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Password)
 		{
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
-				$form.highStack.AddChild($inPrmpt)
+				if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+					$inPrmpt.Margin = "0, 10, 5, 0"
+					$inPanel.AddChild($inPrmpt)
+				}
+				else {
+					$form.highStack.AddChild($inPrmpt)
+				}
 			}
 			# Password box
 			$inBox = New-Object System.Windows.Controls.PasswordBox
@@ -355,11 +365,17 @@ function Show-AnyBox
 			$inBox.Background = 'WhiteSmoke'
 		}
 		elseif ($Prompt[$i].InputType -eq [AnyBox.InputType]::Date)
-		{
-			# Date picker
+		{	# Date picker
 			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
-				$form.highStack.AddChild($inPrmpt)
+				if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+					$inPrmpt.Margin = "0, 10, 5, 0"
+					$inPanel.AddChild($inPrmpt)
+				}
+				else {
+					$form.highStack.AddChild($inPrmpt)
+				}
 			}
+
 			$inBox = New-Object System.Windows.Controls.DatePicker
 			$inBox.Name = "Input_$i"
 			$inBox.Margin = "0, 10, 0, 0"
@@ -393,11 +409,17 @@ function Show-AnyBox
 			$inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
 		}
 		else
-		{
-			# Text box
-			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) { # "Prompt_$i")) {
-				$form.highStack.AddChild($inPrmpt)
+		{	# Text box
+			if (($inPrmpt = New-TextBlock $Prompt[$i].Message)) {
+				if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+					$inPrmpt.Margin = "0, 10, 5, 0"
+					$inPanel.AddChild($inPrmpt)
+				}
+				else {
+					$form.highStack.AddChild($inPrmpt)
+				}
 			}
+
 			$inBox = New-Object System.Windows.Controls.TextBox
 			$inBox.Name = "Input_$i"
 			$inBox.MinHeight = 25
@@ -437,8 +459,8 @@ function Show-AnyBox
 			##############################################
 
 			if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileOpen -or $Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
-				$inPanel = New-Object System.Windows.Controls.DockPanel
-				$inPanel.LastChildFill = $true
+				$filePanel = New-Object System.Windows.Controls.DockPanel
+				$filePanel.LastChildFill = $true
 
 				$fileBtn = New-Object System.Windows.Controls.Button
 				$fileBtn.Name = "btn_Input_$i"
@@ -482,8 +504,9 @@ function Show-AnyBox
 					})
 				}
 
-				$inPanel.AddChild($fileBtn)
-				$inPanel.AddChild($inBox)
+				$filePanel.AddChild($fileBtn)
+				$filePanel.AddChild($inBox)
+				
 				$form.Add($fileBtn.Name, $fileBtn)
 			}
 
@@ -496,10 +519,20 @@ function Show-AnyBox
 		if ($Prompt[$i].ReadOnly) {
 			$inBox.IsReadOnly = $true
 			$inBox.IsEnabled = $false
-			# $inBox.IsReadOnlyCaretVisible = $false
 		}
 
-		if ($inPanel) {
+		if ($filePanel) {
+			if ($inPanel) {
+				$inPanel.AddChild($filePanel)
+				$form.highStack.AddChild($inPanel)
+			}
+			else {
+				$form.highStack.AddChild($filePanel)
+			}
+			$filePanel = $null
+		}
+		elseif ($inPanel) {
+			$inPanel.AddChild($inBox)
 			$form.highStack.AddChild($inPanel)
 		}
 		else {
@@ -524,6 +557,10 @@ function Show-AnyBox
 		# $dataGrid.Name = 'data_grid'
 
 		$dataGrid = $form['data_grid']
+
+		if ($GridAsList) {
+			$GridData = $GridData | ConvertTo-Long
+		}
 
 		$dataGrid.ItemsSource = $GridData
 
@@ -566,12 +603,13 @@ function Show-AnyBox
 		$dataGrid.FontSize = 12
 
 		if (-not $HideGridSearch) {
+			$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
+			$form.highStack.AddChild($gridMsg)
+
 			[scriptblock]$filterGrid = {
 				if (-not $form.filterText.Text) {
 					$form.data_grid.ItemsSource = $GridData
-					if ($form.ContainsKey('txt_Grid') -and $form['txt_Grid'].Visibility -eq 'Visible') {
-						$form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
-					}
+					$form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
 				}
 				elseif ($form.filterBy.SelectedItem) {
 					[string]$filterBy = $form.filterBy.SelectedItem.ToString()
@@ -609,9 +647,8 @@ function Show-AnyBox
 							$form.data_grid.ItemsSource = $GridData
 						}
 					}
-					if ($form.ContainsKey('txt_Grid') -and $form['txt_Grid'].Visibility -eq 'Visible') {
-						$form['txt_Grid'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $GridData.Count
-					}
+
+					$form['txt_Grid'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $GridData.Count
 				}
 			}
 			

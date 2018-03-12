@@ -61,7 +61,7 @@ ScriptsToProcess = 'AnyBoxPrompt', 'HelperFunctions'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'ConvertTo-Base64', 'ConvertTo-Long', 'Show-AnyBox'
+FunctionsToExport = 'ConvertTo-Base64', 'New-AnyBoxPrompt', 'Show-AnyBox'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -79,7 +79,7 @@ AliasesToExport = @()
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'HelperFunctions.ps1', 'Show-AnyBox.ps1'
+FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'HelperFunctions.ps1', 'AnyBoxPrompt.ps1', 'Show-AnyBox.ps1'
 
 # HelpInfo URI of this module
 HelpInfoURI = 'https://www.donaldmellenbruch.com/post/introducing-the-anybox'
