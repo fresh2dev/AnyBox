@@ -7,7 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 0.2 - 2018-03-12
+## v0.2 - 2018-03-12
+
+### Added
+
+- Extended `AnyBox.Prompt` class to include `Name` property to use as an identifier in the output (defaults to "Input_#").
+- Added `-Name` parameter to the `AnyBox.Prompt` wrapper function `New-AnyBoxPrompt`.
+
+## v0.2 - 2018-03-11
 
 ### Added
 
@@ -15,6 +22,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - When `-GridData` is provided, DataGrid now fills all available space when window is resized.
 - `-GridAsList` parameter as a shortcut for `ConvertTo-Long`.
 
-## 0.1 - 2018-03-06
+## v0.1 - 2018-03-06
 
 - Initial release

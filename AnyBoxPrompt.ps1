@@ -8,6 +8,7 @@ namespace AnyBox {
 
 	public class Prompt
 	{
+		public string Name;
 		public InputType InputType = InputType.Text;
 		public string Message;
 		public MessagePosition MessagePosition = MessagePosition.Top;
@@ -25,6 +26,7 @@ function New-AnyBoxPrompt
 {
 	[cmdletbinding()]
 	param(
+		[string]$Name,
 		[ValidateNotNullOrEmpty()]
 		[AnyBox.InputType]$InputType = [AnyBox.InputType]::Text,
 		[string]$Message,
@@ -38,6 +40,11 @@ function New-AnyBoxPrompt
 		[string[]]$ValidateSet,
 		[System.Management.Automation.ScriptBlock]$ValidateScript
 	)
+
+	if ($Name -notmatch '^[A-Za-z_]+[A-Za-z0-9_]*$') {
+		Write-Warning "Name must start with a letter or the underscore character (_), and must contain only letters, digits, or underscores."
+		$Name = $null
+	}
 
 	if ($InputType -ne [AnyBox.InputType]::Text)
 	{
@@ -65,6 +72,7 @@ function New-AnyBoxPrompt
 	
 	$p = New-Object AnyBox.Prompt
 
+	$p.Name = $Name
 	$p.InputType = $InputType
 	$p.Message = $Message
 	$p.MessagePosition = $MessagePosition

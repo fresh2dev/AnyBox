@@ -294,6 +294,10 @@ function Show-AnyBox
 
 		$inPanel = $null
 
+		if (-not $Prompt[$i].Name) {
+			$Prompt[$i].Name = "Input_$i"
+		}
+
 		if ($Prompt[$i].MessagePosition -eq [AnyBox.MessagePosition]::Left) {
 			$inPanel = New-Object System.Windows.Controls.DockPanel
 			$inPanel.LastChildFill = $true
@@ -312,7 +316,6 @@ function Show-AnyBox
 			}
 			# Combo box
 			$inBox = New-Object System.Windows.Controls.ComboBox
-			$inBox.Name = "Input_$i"
 			$inBox.MinHeight = 25
 			$inBox.Margin = "0, 10, 0, 0"
 			$inBox.IsReadOnly = $true
@@ -332,7 +335,6 @@ function Show-AnyBox
 		{
 			# Check box
 			$inBox = New-Object System.Windows.Controls.CheckBox
-			$inBox.Name = "Input_$i"
 			$inBox.Margin = "0, 10, 0, 0"
 			$inBox.Content = $Prompt[$i].Message
 			$inBox.IsChecked = $($Prompt[$i].DefaultValue -eq [bool]::TrueString)
@@ -353,7 +355,6 @@ function Show-AnyBox
 			# Password box
 			$inBox = New-Object System.Windows.Controls.PasswordBox
 			$inBox.MinHeight = 25
-			$inBox.Name = "Input_$i"
 			$inBox.Padding = '3, 0, 0, 0'
 			$inBox.Margin = "0, 10, 0, 0"
 			$inBox.HorizontalAlignment = 'Stretch'
@@ -377,7 +378,6 @@ function Show-AnyBox
 			}
 
 			$inBox = New-Object System.Windows.Controls.DatePicker
-			$inBox.Name = "Input_$i"
 			$inBox.Margin = "0, 10, 0, 0"
 			$inBox.HorizontalAlignment = $ContentAlignment
 			$inBox.HorizontalContentAlignment = $ContentAlignment
@@ -393,7 +393,6 @@ function Show-AnyBox
 		{
 			# Hyperlink
 			$inBox = New-TextBlock -text $Prompt[$i].Message
-			$inBox.Name = "Input_$i"
 			$inBox.FontSize = $FontSize
 			$inBox.Foreground = 'Blue'
 			$inBox.TextDecorations = 'Underline'
@@ -421,7 +420,6 @@ function Show-AnyBox
 			}
 
 			$inBox = New-Object System.Windows.Controls.TextBox
-			$inBox.Name = "Input_$i"
 			$inBox.MinHeight = 25
 			$inBox.MinWidth = 50
 			$inBox.Padding = '3, 0, 0, 0'
@@ -463,7 +461,7 @@ function Show-AnyBox
 				$filePanel.LastChildFill = $true
 
 				$fileBtn = New-Object System.Windows.Controls.Button
-				$fileBtn.Name = "btn_Input_$i"
+				$fileBtn.Name = 'btn_' + $Prompt[$i].Name
 				$fileBtn.Height = 25
 				$fileBtn.Width = 25
 				$fileBtn.Margin = "0, 5, 0, 0"
@@ -492,7 +490,7 @@ function Show-AnyBox
 					})
 				}
 				else
-				{ # if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
+				{	# if ($Prompt[$i].InputType -eq [AnyBox.InputType]::FileSave) {
 					$fileBtn.add_Click({
 						[string]$inBoxName = $_.Source.Name.Replace('btn_','')
 						$savWin = New-Object Microsoft.Win32.SaveFileDialog
@@ -513,6 +511,8 @@ function Show-AnyBox
 			##############################################
 
 		}
+
+		$inBox.Name = $Prompt[$i].Name.ToString()
 
 		$inBox.FontSize = $FontSize
 
@@ -731,10 +731,10 @@ function Show-AnyBox
 		[scriptblock]$validate = {
 			[bool]$valid = $true
 			for ($i = 0; $i -lt $Prompt.Length; $i++) {
-				if ($form["Input_$i"] -is [System.Windows.Controls.TextBox]) {
+				if ($form[$Prompt[$i].Name] -is [System.Windows.Controls.TextBox]) {
 					[string]$msg = $null
 
-					if ($Prompt[$i].ValidateNotEmpty -and -not $form["Input_$i"].Text) {
+					if ($Prompt[$i].ValidateNotEmpty -and -not $form[$Prompt[$i].Name].Text) {
 						if ($Prompt[$i].Message) {
 							$msg = "Please provide input for '{0}'" -f $Prompt[$i].Message.TrimEnd(':')
 						}
@@ -742,7 +742,7 @@ function Show-AnyBox
 							$msg = "Please provide input for required fields."
 						}
 					}
-					elseif ($Prompt[$i].ValidateScript -and -not ($form["Input_$i"].Text | ForEach-Object -Process $Prompt[$i].ValidateScript)) {
+					elseif ($Prompt[$i].ValidateScript -and -not ($form[$Prompt[$i].Name].Text | ForEach-Object -Process $Prompt[$i].ValidateScript)) {
 						if ($Prompt[$i].Message) {
 							$msg = "Invalid input for '{0}'" -f $Prompt[$i].Message.TrimEnd(':')
 						}
@@ -753,26 +753,26 @@ function Show-AnyBox
 
 					if ($msg) {
 						$null = Show-AnyBox @childWinParams -Message $msg
-						$null = $form["Input_$i"].Focus()
+						$null = $form[$Prompt[$i].Name].Focus()
 						$valid = $false
 						break
 					}
 				}
 				elseif ($Prompt[$i].ValidateNotEmpty) {
-					if ($form["Input_$i"] -is [System.Windows.Controls.PasswordBox] -and $form["Input_$i"].SecurePassword.Length -eq 0) {
+					if ($form[$Prompt[$i].Name] -is [System.Windows.Controls.PasswordBox] -and $form[$Prompt[$i].Name].SecurePassword.Length -eq 0) {
 						$null = Show-AnyBox @childWinParams -Message "Please provide a password."
-						$null = $form["Input_$i"].Focus()
+						$null = $form[$Prompt[$i].Name].Focus()
 						$valid = $false
 						break
 					}
-					elseif ($form["Input_$i"] -is [System.Windows.Controls.DatePicker] -and -not $form["Input_$i"].Text) {
+					elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.DatePicker] -and -not $form[$Prompt[$i].Name].Text) {
 						$null = Show-AnyBox @childWinParams -Message "Please select a date."
-						$null = $form["Input_$i"].Focus()
+						$null = $form[$Prompt[$i].Name].Focus()
 						$valid = $false
 						break
 					}
-					elseif ($form["Input_$i"] -is [System.Windows.Controls.TextBlock] -and $form["Input_$i"].Foreground.Color -ne '#FF000080') { # -ne Navy
-						$null = Show-AnyBox @childWinParams -Message $("Please click the link '{0}'." -f $form["Input_$i"].Text)
+					elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.TextBlock] -and $form[$Prompt[$i].Name].Foreground.Color -ne '#FF000080') { # -ne Navy
+						$null = Show-AnyBox @childWinParams -Message $("Please click the link '{0}'." -f $form[$Prompt[$i].Name].Text)
 						$valid = $false
 						break
 					}
@@ -894,17 +894,18 @@ function Show-AnyBox
 		if ($Prompt) {
 			[bool]$focused = $false
 			for ($i = 0; $i -lt $Prompt.Length; $i++) {
-				if (($form["Input_$i"] -is [System.Windows.Controls.TextBox] -and [string]::IsNullOrEmpty($form["input_$i"].Text)) -or `
-						($form["Input_$i"] -is [System.Windows.Controls.PasswordBox] -and $form["input_$i"].SecurePassword.Length -eq 0)) {
-					$null = $form["Input_$i"].Focus()
-					$form["Input_$i"].SelectAll()
+				if (($form[$Prompt[$i].Name] -is [System.Windows.Controls.TextBox] -and [string]::IsNullOrEmpty($form[$Prompt[$i].Name].Text)) -or `
+						($form[$Prompt[$i].Name] -is [System.Windows.Controls.PasswordBox] -and $form[$Prompt[$i].Name].SecurePassword.Length -eq 0)) {
+					$null = $form[$Prompt[$i].Name].Focus()
+					$form[$Prompt[$i].Name].SelectAll()
 					$focused = $true
 					break
 				}
 			}
-			if (-not $focused -and $form["Input_0"] -is [System.Windows.Controls.TextBox]) {
-				$null = $form["Input_0"].Focus()
-				$form["Input_0"].SelectAll()
+
+			if (-not $focused -and $form[$Prompt[0].Name] -is [System.Windows.Controls.TextBox]) {
+				$null = $form[$Prompt[0].Name].Focus()
+				$form[$Prompt[0].Name].SelectAll()
 			}
 		}
 	})
@@ -946,48 +947,49 @@ function Show-AnyBox
 			$form['Timer'] = $null
 		}
 
-		$form.GetEnumerator() | ForEach-Object {
-			if ($_.Name -match 'Input_\d+') {
-				if ($_.Value -is [System.Windows.Controls.TextBox]) {
-					$form.Result.Add($_.Name, $_.Value.Text)
+		for ($i = 0; $i -lt $Prompt.Length; $i++)
+		{
+			if ($form[$Prompt[$i].Name] -is [System.Windows.Controls.TextBox]) {
+				$form.Result.Add($Prompt[$i].Name, $form[$Prompt[$i].Name].Text)
+			}
+			elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.TextBlock]) {
+				$form.Result.Add($Prompt[$i].Name, $($form[$Prompt[$i].Name].Foreground.Color -eq '#FF000080')) # -eq Navy
+			}
+			elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.PasswordBox]) {
+				$form.Result.Add($Prompt[$i].Name, $form[$Prompt[$i].Name].SecurePassword)
+			}
+			elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.CheckBox]) {
+				$form.Result.Add($Prompt[$i].Name, $form[$Prompt[$i].Name].IsChecked)
+			}
+			elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.ComboBox]) {
+				$form.Result.Add($Prompt[$i].Name, $form[$Prompt[$i].Name].SelectedItem)
+			}
+			elseif ($form[$Prompt[$i].Name] -is [System.Windows.Controls.DatePicker]) {
+				$form.Result.Add($Prompt[$i].Name, $form[$Prompt[$i].Name].Text)
+			}
+		}
+		
+		if ($form.ContainsKey('data_grid') -and ($form['data_grid'].SelectedCells.Count -gt 0 -or $form['data_grid'].SelectedItems.Count -gt 0))
+		{
+			$selection = $null
+
+			switch ($SelectionMode)
+			{
+				'SingleCell' {
+					[string]$selection = $form['data_grid'].SelectedCells[0].Item.ToString()
 				}
-				elseif ($_.Value -is [System.Windows.Controls.TextBlock]) {
-					$form.Result.Add($_.Name, $($_.Value.Foreground.Color -eq '#FF000080')) # -eq Navy
+				<#'MultiCell' {
+					[string[]]$selection = @($form.data_grid.SelectedCells.Item.Value)
+				}#>
+				'SingleRow' {
+					[psobject]$selection = $form['data_grid'].SelectedItem
 				}
-				elseif ($_.Value -is [System.Windows.Controls.PasswordBox]) {
-					$form.Result.Add($_.Name, $_.Value.SecurePassword)
-				}
-				elseif ($_.Value -is [System.Windows.Controls.CheckBox]) {
-					$form.Result.Add($_.Name, $_.Value.IsChecked)
-				}
-				elseif ($_.Value -is [System.Windows.Controls.ComboBox]) {
-					$form.Result.Add($_.Name, $_.Value.SelectedItem)
-				}
-				elseif ($_.Value -is [System.Windows.Controls.DatePicker]) {
-					$form.Result.Add($_.Name, $_.Value.Text)
+				'MultiRow' {
+					[psobject[]]$selection = @($form['data_grid'].SelectedItems)
 				}
 			}
-			elseif ($_.Name -eq 'data_grid' -and ($form['data_grid'].SelectedCells.Count -gt 0 -or $form['data_grid'].SelectedItems.Count -gt 0)) {
-				$selection = $null
 
-				switch ($SelectionMode)
-				{
-					'SingleCell' {
-						[string]$selection = $form['data_grid'].SelectedCells[0].Item.ToString()
-					}
-					<#'MultiCell' {
-						[string[]]$selection = @($form.data_grid.SelectedCells.Item.Value)
-					}#>
-					'SingleRow' {
-						[psobject]$selection = $form['data_grid'].SelectedItem
-					}
-					'MultiRow' {
-						[psobject[]]$selection = @($form['data_grid'].SelectedItems)
-					}
-				}
-
-				$form.Result.Add('grid_select', $selection)
-			}
+			$form.Result.Add('grid_select', $selection)
 		}
 
 		if ($form.Window.Owner) {
