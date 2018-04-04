@@ -112,6 +112,8 @@ function Show-AnyBox
 		[uint16]$MinHeight = 50,
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$MinWidth = 50,
+		[uint16]$MaxHeight = 0,
+		[uint16]$MaxWidth = 0,
 		[switch]$Topmost,
 		[switch]$HideTaskbarIcon,
 		[uint32]$Timeout,
@@ -187,6 +189,14 @@ function Show-AnyBox
 	$form.Window = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xaml))
 	$xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
 	$xaml = $null
+
+	if ($MaxHeight -ge $MinHeight) {
+		$form.Window.MaxHeight = $MaxHeight
+	}
+
+	if ($MaxWidth -ge $MinWidth) {
+		$form.Window.MaxWidth = $MaxWidth
+	}
 
 	if ($WindowStyle -eq 'None') {
 		$form.Window.BorderBrush = 'Black'
@@ -937,6 +947,9 @@ function Show-AnyBox
 
 			$timer.Start()
 		}
+
+		$form.Window.MinHeight = $form.Window.ActualHeight
+		$form.Window.MinWidth = $form.Window.ActualWidth
 
 		$form.Window.Activate()
 	})
