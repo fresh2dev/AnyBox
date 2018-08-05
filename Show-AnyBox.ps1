@@ -1,3 +1,5 @@
+Add-Type -AssemblyName 'System.Drawing', 'PresentationFramework', 'PresentationCore', 'WindowsBase'
+
 function Show-AnyBox
 {
 	<#
@@ -174,7 +176,7 @@ function Show-AnyBox
 					}
 				}
 				else { # string
-					$form.Result.Add($_, $false)
+					$form.Result.Add($_ -as [string], $false)
 				}
 			}
 
@@ -777,13 +779,6 @@ function Show-AnyBox
 		$form.highStack.AddChild($tab_panel)
 	}
 
-	# Add comment textblocks.
-	if (($txtMsg = New-TextBlock -text $($Comment -join [environment]::NewLine) -name 'txt_Explain')) {
-		$txtMsg.FontStyle = 'Italic'
-		$txtMsg.FontWeight = 'Normal'
-		$form.highStack.AddChild($txtMsg)
-	}
-
 	if ($GridData)
 	{
 		$dataGrid = $form['data_grid']
@@ -1092,7 +1087,7 @@ $form.Result | Foreach-Object -Process {{
 				}
 				else {
 					# $btn.Name = $Buttons[$c]
-					$btn.Content = '_' + $Buttons[$c]
+					$btn.Content = '_' + ($Buttons[$c] -as [string])
 
 					if ($Buttons[$c] -eq 'Explore') {
 						$btn.ToolTip = 'Explore data in a separate grid window.'

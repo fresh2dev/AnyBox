@@ -1,13 +1,20 @@
 
 # [Introducing the AnyBox](https://www.donaldmellenbruch.com/post/introducing-the-anybox/)
 
-# [v0.3.0](https://www.donaldmellenbruch.com/post/anybox-v0.3/)
+# [New in v0.3.0](https://www.donaldmellenbruch.com/post/anybox-v0.3/)
 
 # Changelog
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [v0.3.1] - 2018-08-05
+
+### Changed
+
+- Minor bugfixes (see [issue 2](https://github.com/dm3ll3n/AnyBox/issues/2))
+- Corrections to examples.
 
 ## [v0.3.0](https://www.donaldmellenbruch.com/post/anybox-v0.3/) - 2018-03-04
 
@@ -35,7 +42,7 @@ New function `New-AnyBoxButton` (alias `New-Button`) to wrap around the new obje
   - `-IsDefault`: designates the button to serve as the *default* button.
   - `-OnClick`: accepts a script block to run when the button is clicked.
 
-## Changed
+### Changed
 
   - `-ContentAlignment` now defaults to 'Left'.
   - `-FontSize` now defaults to '12'.

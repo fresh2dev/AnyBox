@@ -4,7 +4,7 @@
 RootModule = 'AnyBox.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3.0'
+ModuleVersion = '0.3.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = 'Desktop'
@@ -46,7 +46,7 @@ PowerShellVersion = '3.0'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = 'PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll'
+RequiredAssemblies = 'System.Drawing.dll', 'PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll'
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 ScriptsToProcess = 'AnyBoxPrompt', 'HelperFunctions'
