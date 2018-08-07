@@ -1,3 +1,6 @@
 .vscode
 thumbs.db
 testing.ps1
+.vs
+*.pssproj
+*.sln
