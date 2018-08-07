@@ -125,8 +125,8 @@ function Show-AnyBox
 		[uint32]$Timeout,
 		[switch]$Countdown,
 		[System.Windows.Window]$ParentWindow = $null,
-
-		[array]$GridData,
+		$GridData,
+		[switch]$MultiGridData,
 		[switch]$GridAsList,
 		[ValidateSet('None', 'SingleCell', 'SingleRow', 'MultiRow')]
 		[string]$SelectionMode = 'SingleCell',
@@ -186,7 +186,7 @@ function Show-AnyBox
 		}
 	}
 
-	[xml]$xaml = @"
+	[string]$xaml = @"
 <Window
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	AllowsTransparency="False" WindowStartupLocation="CenterScreen" SizeToContent="WidthAndHeight" ShowActivated="True"
@@ -204,18 +204,34 @@ function Show-AnyBox
 			</Grid.RowDefinitions>
 
 			<StackPanel Name="highStack" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
-
-			<DataGrid Name='data_grid' Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Visibility="Collapsed"/>
-
-			<StackPanel Name="lowStack" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+            <StackPanel Name="midStack" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+			{0}
+            </StackPanel>
+			<StackPanel Name="lowStack" Grid.Column="0" Grid.Row="{1}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
 		</Grid>
 	</Border>
 </Window>
 "@
+	$DataGridTemplate = "`n`r`t`t`t<DataGrid Name='data_grid{0}' Grid.Column='0' Grid.Row='{0}' HorizontalAlignment='Stretch' VerticalAlignment='Stretch' Margin='0' Visibility='Visible'/>`n`r"
 
-	$form.Window = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xaml))
-	$xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
-	$xaml = $null
+	$DataGridCount = 1
+	[string]$dataGrids = $(
+		if ($MultiGridData){
+			-join(
+				$GridData | %{
+					$DataGridTemplate -f $DataGridCount
+					$DataGridCount++
+				}
+			)
+		} else {
+			$DataGridTemplate -f $DataGridCount
+			$count++
+		}
+	)
+	$CompleteXaml = [xml]($Xaml -f $dataGrids, $DataGridCount)
+
+	$form.Window = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $CompleteXaml))
+	$CompleteXaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
 
 	if ($MaxHeight -ge $MinHeight) {
 		$form.Window.MaxHeight = $MaxHeight
@@ -775,191 +791,207 @@ function Show-AnyBox
 		$form.highStack.AddChild($tab_panel)
 	}
 
-	if ($GridData)
-	{
-		$dataGrid = $form['data_grid']
+	if ($GridData) {
+		#$GridDataCount = 1
+		1..($GridData.Count) | %{
+			[array]$ThisGridData = $(
+				if (-not $MultiGridData){
+					$GridData
+				}
+				else {
+					$GridData[($_ - 1)]
+				}
+			)
 
-		$form.Result.Add('grid_select', $null)
+			$ThisGridName = "data_grid$_"
+			$ThisGridSelectName = "grid_select$_"
 
-		if ($GridAsList) {
-			$GridData = $GridData | ConvertTo-Long
-		}
+			$ThisDataGrid = $form[$ThisGridName]
 
-		$dataGrid.ItemsSource = $GridData
+			$form.Result.Add($ThisGridSelectName, $null)
 
-		$dataGrid.Visibility = 'Visible'
-
-		if ($SelectionMode -eq 'None') {
-			$dataGrid.IsEnabled = $false
-		}
-		else {
-			if ($SelectionMode -like 'Multi*') {
-				$dataGrid.SelectionMode = 'Extended'
-			}
-			else {
-				$dataGrid.SelectionMode = 'Single'
+			if ($GridAsList) {
+				$ThisGridData = $ThisGridData | ConvertTo-Long
 			}
 
-			if ($SelectionMode -like '*Row') {
-				$dataGrid.SelectionUnit = 'FullRow'
-			}
-			else {
-				$dataGrid.SelectionUnit = 'Cell'
-			}
-		}
+			$ThisDataGrid.ItemsSource = $ThisGridData
 
-		$dataGrid.ClipboardCopyMode = 'ExcludeHeader'
-		$dataGrid.Margin = "0, 10, 0, 0"
-		$dataGrid.IsReadOnly = $true
-		$dataGrid.AutoGenerateColumns = $true
-		$dataGrid.VerticalScrollBarVisibility = 'Auto'
-		$dataGrid.HorizontalScrollBarVisibility = 'Auto'
-		$dataGrid.HorizontalAlignment = 'Stretch'
-		$dataGrid.HorizontalContentAlignment = 'Stretch'
-		$dataGrid.VerticalContentAlignment = 'Stretch'
-		$dataGrid.VerticalAlignment = 'Stretch'
-		$dataGrid.HeadersVisibility = 'Column'
-		$dataGrid.AlternatingRowBackground = 'WhiteSmoke'
-		$dataGrid.CanUserSortColumns = $true
-		$dataGrid.CanUserResizeColumns = $true
-		$dataGrid.CanUserResizeRows = $false
-		$dataGrid.CanUserReorderColumns = $false
-		$dataGrid.CanUserDeleteRows = $true
-		$dataGrid.GridLinesVisibility = 'All'
-		$dataGrid.FontSize = 12
+			#$ThisDataGrid.Visibility = 'Visible'
 
-		$form['data_grid'].add_SelectionChanged({
-			if ($form['data_grid'].SelectedCells.Count -gt 0 -or $form['data_grid'].SelectedItems.Count -gt 0)
-			{
-				$selection = $null
-
-				switch ($SelectionMode)
-				{
-					'SingleCell' {
-						[string]$selection = $form['data_grid'].SelectedCells[0].Item.ToString()
-					}
-					'SingleRow' {
-						[psobject]$selection = $form['data_grid'].SelectedItem
-					}
-					'MultiRow' {
-						[psobject[]]$selection = @($form['data_grid'].SelectedItems)
-					}
+			if ($SelectionMode -eq 'None') {
+				$ThisDataGrid.IsEnabled = $false
+			} else {
+				if ($SelectionMode -like 'Multi*') {
+					$ThisDataGrid.SelectionMode = 'Extended'
+				} else {
+					$ThisDataGrid.SelectionMode = 'Single'
 				}
 
-				$form.Result['grid_select'] = $selection
-			}
-			else {
-				$form.Result['grid_select'] = $null
-			}
-		})
-
-		if (-not $HideGridSearch)
-		{
-			$gridMsg = New-TextBlock -text $('{0} Results' -f $GridData.Count) -name 'txt_Grid'
-			$form.highStack.AddChild($gridMsg)
-
-			[scriptblock]$filterGrid = {
-				if (-not $form.filterText.Text) {
-					$form.data_grid.ItemsSource = $GridData
-					$form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
+				if ($SelectionMode -like '*Row') {
+					$ThisDataGrid.SelectionUnit = 'FullRow'
+				} else {
+					$ThisDataGrid.SelectionUnit = 'Cell'
 				}
-				elseif ($form.filterBy.SelectedItem) {
-					[string]$filterBy = $form.filterBy.SelectedItem.ToString()
-					[string]$filter = $form.filterText.Text
+			}
 
-					switch ($form.filterMatch.SelectedItem)
+            $DataGridProperties = @{
+			    ClipboardCopyMode = 'ExcludeHeader'
+			    Margin = "0, 10, 0, 0"
+			    IsReadOnly = $true
+			    AutoGenerateColumns = $true
+			    VerticalScrollBarVisibility = 'Auto'
+			    HorizontalScrollBarVisibility = 'Auto'
+			    HorizontalAlignment = 'Stretch'
+			    HorizontalContentAlignment = 'Stretch'
+			    VerticalContentAlignment = 'Stretch'
+			    VerticalAlignment = 'Stretch'
+			    HeadersVisibility = 'Column'
+			    AlternatingRowBackground = 'WhiteSmoke'
+			    CanUserSortColumns = $true
+			    CanUserResizeColumns = $true
+			    CanUserResizeRows = $false
+			    CanUserReorderColumns = $false
+			    CanUserDeleteRows = $true
+			    GridLinesVisibility = 'All'
+			    FontSize = 12
+            }
+
+            $DataGridProperties.GetEnumerator() |%{
+                $ThisDataGrid.($_.Key) = $_.Value
+            }
+
+			$form[$ThisGridName].add_SelectionChanged({
+                $SourceDataGrid = $_.Source.Name
+                $SourceGridSelectName = "grid_select$($SourceDataGrid -replace '\D')"
+				if ($form[$SourceDataGrid].SelectedCells.Count -gt 0 -or $form[$SourceDataGrid].SelectedItems.Count -gt 0) {
+					$selection = $null
+
+					switch ($SelectionMode)
 					{
-						'contains' {
-							$filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -match $filter)
-							break
+						'SingleCell' {
+							[string]$selection = $form[$SourceDataGrid].SelectedCells[0].Item.ToString()
 						}
-						'not contains' {
-							$filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -notmatch $filter)
-							break
+						'SingleRow' {
+							[psobject]$selection = $form[$SourceDataGrid].SelectedItem
 						}
-						'starts with' {
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -like "$filter*")
-							break
-						}
-						'ends with' {
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -like "*$filter")
-							break
-						}
-						'equals' {
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -eq $filter)
-							break
-						}
-						'not equals' {
-							$form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -ne $filter)
-							break
-						}
-						Default {
-							$form.data_grid.ItemsSource = $GridData
+						'MultiRow' {
+							[psobject[]]$selection = @($form[$SourceDataGrid].SelectedItems)
 						}
 					}
-
-					$form['txt_Grid'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $GridData.Count
+					$form.Result[$SourceGridSelectName] = $selection
 				}
+				else {
+					$form.Result[$SourceGridSelectName] = $null
+				}
+			})
+
+			if (-not $HideGridSearch) {
+				$gridMsg = New-TextBlock -text $('{0} Results' -f $ThisGridData.Count) -name 'txt_Grid'
+				$form.highStack.AddChild($gridMsg)
+
+				[scriptblock]$filterGrid = {
+					if (-not $form.filterText.Text) {
+						$form.data_grid.ItemsSource = $ThisGridData
+						$form['txt_Grid'].Text = '{0} Results' -f $ThisGridData.Count
+					}
+					elseif ($form.filterBy.SelectedItem) {
+						[string]$filterBy = $form.filterBy.SelectedItem.ToString()
+						[string]$filter = $form.filterText.Text
+
+						switch ($form.filterMatch.SelectedItem)
+						{
+							'contains' {
+								$filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -match $filter)
+								break
+							}
+							'not contains' {
+								$filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -notmatch $filter)
+								break
+							}
+							'starts with' {
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -like "$filter*")
+								break
+							}
+							'ends with' {
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -like "*$filter")
+								break
+							}
+							'equals' {
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -eq $filter)
+								break
+							}
+							'not equals' {
+								$form.data_grid.ItemsSource = @($ThisGridData | Where-Object $filterBy -ne $filter)
+								break
+							}
+							Default {
+								$form.data_grid.ItemsSource = $ThisGridData
+							}
+						}
+
+						$form['txt_Grid'].Text = '{0} / {1} Results' -f ([Collections.Generic.IEnumerable``1[object]]$form.data_grid.ItemsSource).Count, $ThisGridData.Count
+					}
+				}
+
+				# $form[$ThisGridName].add_SourceUpdated($filterGrid)
+
+				$fltrBy = New-Object System.Windows.Controls.ComboBox
+				$fltrBy.Name = 'filterBy'
+				$fltrBy.FontSize = $FontSize
+				$fltrBy.Margin = "0, 10, 0, 0"
+				$fltrBy.MinHeight = 25
+				$fltrBy.IsReadOnly = $true
+				$fltrBy.HorizontalAlignment = 'Left'
+				$fltrBy.HorizontalContentAlignment = 'Left'
+				$fltrBy.VerticalAlignment = 'Center'
+				$fltrBy.VerticalContentAlignment = 'Center'
+				$fltrBy.add_SelectionChanged($filterGrid)
+
+				$fltrMatch = New-Object System.Windows.Controls.ComboBox
+				$fltrMatch.Name = 'filterMatch'
+				$fltrMatch.FontSize = $FontSize
+				$fltrMatch.Margin = "0, 10, 0, 0"
+				$fltrMatch.MinHeight = 25
+				$fltrMatch.IsReadOnly = $true
+				$fltrMatch.HorizontalAlignment = 'Left'
+				$fltrMatch.HorizontalContentAlignment = 'Left'
+				$fltrMatch.VerticalAlignment = 'Center'
+				$fltrMatch.VerticalContentAlignment = 'Center'
+				$fltrMatch.ItemsSource = @('contains', 'not contains', 'starts with', 'ends with', 'equals', 'not equals')
+				$fltrMatch.SelectedIndex = 0
+				$fltrMatch.add_SelectionChanged($filterGrid)
+
+				$fltrBox = New-Object System.Windows.Controls.TextBox
+				$fltrBox.Name = 'filterText'
+				$fltrBox.Padding = '3, 0, 0, 0'
+				$fltrBox.Margin = "0, 10, 0, 0"
+				$fltrBox.MinWidth = 50
+				$fltrBox.TextAlignment = 'Left'
+				$fltrBox.MinHeight = 25
+				$fltrBox.HorizontalAlignment = 'Stretch'
+				$fltrBox.HorizontalContentAlignment = 'Center'
+				$fltrBox.VerticalContentAlignment = 'Center'
+				$fltrBox.VerticalAlignment = 'Center'
+				$fltrBox.TextWrapping = 'Wrap'
+				$fltrBox.FontSize = $FontSize
+				$fltrBox.AcceptsReturn = $false
+				$fltrBox.AcceptsTab = $false
+				$fltrBox.add_TextChanged($filterGrid)
+				$fltrBox.add_GotFocus({$_.Source.SelectAll()})
+
+				$fltrPanel = New-Object System.Windows.Controls.DockPanel
+				$fltrPanel.LastChildFill = $true
+				$fltrPanel.AddChild($fltrBy)
+				$fltrPanel.AddChild($fltrMatch)
+				$fltrPanel.AddChild($fltrBox)
+
+				$form.Add($fltrBy.Name, $fltrBy)
+				$form.Add($fltrMatch.Name, $fltrMatch)
+				$form.Add($fltrBox.Name, $fltrBox)
+				$form.highStack.AddChild($fltrPanel)
 			}
-
-			# $form['data_grid'].add_SourceUpdated($filterGrid)
-
-			$fltrBy = New-Object System.Windows.Controls.ComboBox
-			$fltrBy.Name = 'filterBy'
-			$fltrBy.FontSize = $FontSize
-			$fltrBy.Margin = "0, 10, 0, 0"
-			$fltrBy.MinHeight = 25
-			$fltrBy.IsReadOnly = $true
-			$fltrBy.HorizontalAlignment = 'Left'
-			$fltrBy.HorizontalContentAlignment = 'Left'
-			$fltrBy.VerticalAlignment = 'Center'
-			$fltrBy.VerticalContentAlignment = 'Center'
-			$fltrBy.add_SelectionChanged($filterGrid)
-
-			$fltrMatch = New-Object System.Windows.Controls.ComboBox
-			$fltrMatch.Name = 'filterMatch'
-			$fltrMatch.FontSize = $FontSize
-			$fltrMatch.Margin = "0, 10, 0, 0"
-			$fltrMatch.MinHeight = 25
-			$fltrMatch.IsReadOnly = $true
-			$fltrMatch.HorizontalAlignment = 'Left'
-			$fltrMatch.HorizontalContentAlignment = 'Left'
-			$fltrMatch.VerticalAlignment = 'Center'
-			$fltrMatch.VerticalContentAlignment = 'Center'
-			$fltrMatch.ItemsSource = @('contains', 'not contains', 'starts with', 'ends with', 'equals', 'not equals')
-			$fltrMatch.SelectedIndex = 0
-			$fltrMatch.add_SelectionChanged($filterGrid)
-
-			$fltrBox = New-Object System.Windows.Controls.TextBox
-			$fltrBox.Name = 'filterText'
-			$fltrBox.Padding = '3, 0, 0, 0'
-			$fltrBox.Margin = "0, 10, 0, 0"
-			$fltrBox.MinWidth = 50
-			$fltrBox.TextAlignment = 'Left'
-			$fltrBox.MinHeight = 25
-			$fltrBox.HorizontalAlignment = 'Stretch'
-			$fltrBox.HorizontalContentAlignment = 'Center'
-			$fltrBox.VerticalContentAlignment = 'Center'
-			$fltrBox.VerticalAlignment = 'Center'
-			$fltrBox.TextWrapping = 'Wrap'
-			$fltrBox.FontSize = $FontSize
-			$fltrBox.AcceptsReturn = $false
-			$fltrBox.AcceptsTab = $false
-			$fltrBox.add_TextChanged($filterGrid)
-			$fltrBox.add_GotFocus({$_.Source.SelectAll()})
-
-			$fltrPanel = New-Object System.Windows.Controls.DockPanel
-			$fltrPanel.LastChildFill = $true
-			$fltrPanel.AddChild($fltrBy)
-			$fltrPanel.AddChild($fltrMatch)
-			$fltrPanel.AddChild($fltrBox)
-
-			$form.Add($fltrBy.Name, $fltrBy)
-			$form.Add($fltrMatch.Name, $fltrMatch)
-			$form.Add($fltrBox.Name, $fltrBox)
-			$form.highStack.AddChild($fltrPanel)
 		}
 	}
 
@@ -1169,11 +1201,11 @@ $form.Result | Foreach-Object -Process {{
 				$form.filterBy.SelectedIndex = 0
 			}
 
-			$form.data_grid.Columns | ForEach-Object {
+            $form.GetEnumerator() | ?{$_.key -match '^data_grid'} | select -ExpandProperty Value | select -expandproperty Columns | ForEach-Object {
 				$_.CanUserSort = $true
 				$_.SortMemberPath = $_.Header.ToString()
 				$_.SortDirection = "Ascending"
-			}
+            }
 		}
 
 		if ($Prompts) {
