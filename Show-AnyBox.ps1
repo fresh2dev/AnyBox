@@ -132,7 +132,8 @@ function Show-AnyBox
 		[switch]$GridAsList,
 		[ValidateSet('None', 'SingleCell', 'SingleRow', 'MultiRow')]
 		[string]$SelectionMode = 'SingleCell',
-		[switch]$HideGridSearch
+		[switch]$HideGridSearch,
+        [switch]$HideGridButtons
 	)
 
 	if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
@@ -144,7 +145,7 @@ function Show-AnyBox
 
 	[string[]]$action_btns = @()
 
-	if ($GridData -and -not $HideGridSearch) {
+	if ($GridData -and -not $HideGridSearch -xor $HideGridButtons) {
 		$action_btns += @('Explore', 'Save')
 	}
 
