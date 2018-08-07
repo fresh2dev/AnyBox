@@ -216,16 +216,18 @@ function Show-AnyBox
 
 	$DataGridCount = 1
 	[string]$dataGrids = $(
-		if ($MultiGridData){
-			-join(
-				$GridData | %{
-					$DataGridTemplate -f $DataGridCount
-					$DataGridCount++
-				}
-			)
-		} else {
-			$DataGridTemplate -f $DataGridCount
-			$count++
+		if ($GridData) {
+			if ($MultiGridData){
+				-join(
+					$GridData | %{
+						$DataGridTemplate -f $DataGridCount
+						$DataGridCount++
+					}
+				)
+			} else {
+				$DataGridTemplate -f $DataGridCount
+				$count++
+			}
 		}
 	)
 	$CompleteXaml = [xml]($Xaml -f $dataGrids, $DataGridCount)
@@ -315,43 +317,8 @@ function Show-AnyBox
 		}
 	}
 
-	function New-TextBlock ($text, $name, $font, $size, $color, $margin, $align)
-	{
-		if (-not $font) { $font = $FontFamily }
-		if (-not $size) { $size = $FontSize }
-		if (-not $color) { $color = $FontColor }
-		if (-not $align) { $align = $ContentAlignment }
-
-		if ($text -and -not [string]::IsNullOrEmpty($text.Trim())) {
-			$txtBlk = New-Object System.Windows.Controls.TextBlock
-			$txtBlk.Text = $text
-			$txtBlk.FontFamily = $font
-			$txtBlk.FontSize = $size
-			$txtBlk.Foreground = $color
-			$txtBlk.TextWrapping = 'Wrap'
-			if (-not $PSBoundParameters.ContainsKey('margin')) {
-				$txtBlk.Margin = "0, 10, 0, 0"
-			}
-			else {
-				$txtBlk.Margin = $margin
-			}
-			$txtBlk.VerticalAlignment = 'Center'
-			$txtBlk.HorizontalAlignment = $align
-			$txtBlk.TextAlignment = $align
-
-			if ($name) {
-				$txtBlk.Name = $name
-				$form.Add($txtBlk.Name, $txtBlk)
-			}
-
-			return $txtBlk
-		}
-
-		return $null
-	}
-
 	# Add message textblocks.
-	if (($txtMsg = New-TextBlock -text $($Message -join [environment]::NewLine) -name 'txt_Message')) {
+	if (($txtMsg = New-TextBlock -RefForm ([ref]$Form) -Text $($Message -join [environment]::NewLine) -Name 'txt_Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
 		$form.highStack.AddChild($txtMsg)
 	}
 
@@ -360,7 +327,8 @@ function Show-AnyBox
 	[scriptblock]$addMsgBox = {
 		param($p)
 
-		if (($inPrmpt = New-TextBlock -text $p.Message -font $p.FontFamily -size $p.FontSize -color $p.FontColor -align $p.Alignment)) {
+		if (($inPrmpt = New-TextBlock -RefForm ([ref]$Form) -Text  $p.Message -FontFamily $p.FontFamily -FontSize $p.FontSize -FontColor $p.FontColor -ContentAlignment $p.Alignment
+		)) {
 			if ($p.Collapsible) {
 				$inPrmpt.Margin = 0
 				$expander.Header = $inPrmpt
@@ -453,7 +421,7 @@ function Show-AnyBox
 					$inBox.VerticalContentAlignment = 'Center'
 
 					$prmpt.ValidateSet | foreach {
-						$null = $inBox.Items.Add((New-TextBlock -text $_ -font $prmpt.FontFamily -size $prmpt.FontSize -color 'Black' -margin 0 -align $prmpt.Alignment))
+						$null = $inBox.Items.Add((New-TextBlock -RefForm ([ref]$Form) -text $_ -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor 'Black' -margin 0 -ContentAlignment $prmpt.Alignment))
 					}
 
 					if ($prmpt.DefaultValue) {
@@ -558,7 +526,7 @@ function Show-AnyBox
 			}
 			elseif ($prmpt.InputType -eq [AnyBox.InputType]::Link)
 			{ # Hyperlink
-				$inBox = New-TextBlock -text $prmpt.Message -font $prmpt.FontFamily -size $prmpt.FontSize -color $prmpt.FontColor -align $prmpt.Alignment
+				$inBox = New-TextBlock -RefForm ([ref]$Form) -text $prmpt.Message -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor $prmpt.FontColor -ContentAlignment $prmpt.Alignment
 				$inBox.TextDecorations = 'Underline'
 				$inBox.Cursor = 'Hand'
 				$inBox.Tooltip = $prmpt.DefaultValue
@@ -743,7 +711,7 @@ function Show-AnyBox
 				}
 
 				if ($groupName -imatch '[a-z]') {
-					$header = New-TextBlock $groupName
+					$header = New-TextBlock -RefForm ([ref]$Form) -text $groupName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
 					$header.VerticalAlignment = 'Center'
 					$header.HorizontalAlignment = 'Left'
 					$header.Margin = 0
@@ -773,7 +741,7 @@ function Show-AnyBox
 			else {
 				$tab = New-Object System.Windows.Controls.TabItem
 
-				$tabHead = New-TextBlock -text $tabName -color 'black' -margin 0
+				$tabHead = New-TextBlock -RefForm ([ref]$Form) -text $tabName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -margin 0 -ContentAlignment $ContentAlignment
 				$tab.Header = $tabHead
 
 				if ($groupName) {
@@ -886,7 +854,7 @@ function Show-AnyBox
 			})
 
 			if (-not $HideGridSearch) {
-				$gridMsg = New-TextBlock -text $('{0} Results' -f $ThisGridData.Count) -name 'txt_Grid'
+				$gridMsg = New-TextBlock -RefForm ([ref]$Form) -text $('{0} Results' -f $ThisGridData.Count) -name 'txt_Grid' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
 				$form.highStack.AddChild($gridMsg)
 
 				[scriptblock]$filterGrid = {
@@ -996,7 +964,7 @@ function Show-AnyBox
 	}
 
 	# Add comment textblocks.
-	if (($txtMsg = New-TextBlock -text $($Comment -join [environment]::NewLine) -name 'txt_Explain')) {
+	if (($txtMsg = New-TextBlock -RefForm ([ref]$Form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
 		$txtMsg.FontStyle = 'Italic'
 		$txtMsg.FontWeight = 'Normal'
 		$form.highStack.AddChild($txtMsg)
@@ -1004,51 +972,11 @@ function Show-AnyBox
 
 	if ($Timeout -and $Timeout -gt 0 -and $Countdown) {
 		# Create countdown textblock.
-		$txtTime = New-TextBlock -text '---' -name 'txt_Countdown'
+		$txtTime = New-TextBlock -RefForm ([ref]$Form) -text '---' -name 'txt_Countdown' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
 		$form.highStack.AddChild($txtTime)
 	}
 
 	if ($Buttons.Count -gt 0) {
-		function Test-ValidInput
-		{
-			[bool]$valid = $true
-			foreach ($prmpt in $Prompts)
-			{
-				[string]$msg = $null
-
-				if ($prmpt.ValidateNotEmpty -and -not $form.Result[$prmpt.Name]) {
-						if ($prmpt.ValidateSet) {
-							$msg = 'Please make a selection.'
-						}
-						elseif ($prmpt.InputType -eq [AnyBox.InputType]::Link) {
-							$msg = 'Please click the link.'
-						}
-						elseif ($prmpt.Message) {
-							$msg = "Please provide input for '{0}'" -f $prmpt.Message.TrimEnd(':').Trim()
-						}
-						else {
-							$msg = 'Please provide input for required fields.'
-						}
-				}
-				elseif ($prmpt.ValidateScript -and -not ($form.Result[$prmpt.Name] | ForEach-Object -Process $prmpt.ValidateScript)) {
-					if ($prmpt.Message) {
-						$msg = "Invalid input for '{0}'" -f $prmpt.Message.TrimEnd(':')
-					}
-					else {
-						$msg = "Invalid input provided."
-					}
-				}
-
-				if ($msg) {
-					$null = Show-AnyBox @childWinParams -Message $msg -Buttons $ok_btn
-					$null = $form[$prmpt.Name].Focus()
-					$valid = $false
-					break
-				}
-			}
-			return($valid)
-		}
-
 		[int]$btn_per_row = [math]::Ceiling($Buttons.Count / ([double]$ButtonRows))
 
 		[uint16]$c = 0
@@ -1099,7 +1027,7 @@ $form.Result | Foreach-Object -Process {{
 					}
 					else {
 						$btn.add_Click({
-							if (Test-ValidInput) {
+							if (Test-ValidInput -AllPrompts $Prompts -RefForm ([ref]$form) -childWinParams $childWinParams -ok_btn $ok_btn) {
 								[string]$btn_name = $null
 								if ($_.Source.Name) {
 									$btn_name = $_.Source.Name
@@ -1164,7 +1092,7 @@ $form.Result | Foreach-Object -Process {{
 						}
 						else {
 							$btn.add_Click({
-								if (Test-ValidInput) {
+								if (Test-ValidInput -AllPrompts $Prompts -RefForm ([ref]$form) -childWinParams $childWinParams -ok_btn $ok_btn) {
 									[string]$btn_name = $_.Source.Content.TrimStart('_')
 									$form.Result[$btn_name] = $true
 									$form.Window.Close()
