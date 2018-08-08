@@ -4,3 +4,5 @@ testing.ps1
 .vs
 *.pssproj
 *.sln
+\obj
+\debug
