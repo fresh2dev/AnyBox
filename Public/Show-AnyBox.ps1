@@ -761,7 +761,7 @@ function Show-AnyBox
 
 	if ($GridData) {
 		#$GridDataCount = 1
-		1..($GridData.Count) | %{
+		1..(($griddata | measure).Count) | %{
 			[array]$ThisGridData = $(
 				if (-not $MultiGridData){
 					$GridData
