@@ -226,7 +226,7 @@ function Show-AnyBox
 				)
 			} else {
 				$DataGridTemplate -f $DataGridCount
-				$count++
+				$DataGridCount++
 			}
 		}
 	)
