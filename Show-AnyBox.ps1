@@ -132,7 +132,8 @@ function Show-AnyBox
 		[switch]$GridAsList,
 		[ValidateSet('None', 'SingleCell', 'SingleRow', 'MultiRow')]
 		[string]$SelectionMode = 'SingleCell',
-		[switch]$HideGridSearch
+		[switch]$HideGridSearch,
+        [switch]$HideGridButtons
 	)
 
 	if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
@@ -144,7 +145,7 @@ function Show-AnyBox
 
 	[string[]]$action_btns = @()
 
-	if ($GridData -and -not $HideGridSearch) {
+	if ($GridData -and -not $HideGridSearch -xor $HideGridButtons) {
 		$action_btns += @('Explore', 'Save')
 	}
 
@@ -647,6 +648,49 @@ function Show-AnyBox
 							}
 						})
 					}
+
+					$filePanel.AddChild($fileBtn)
+					# $filePanel.AddChild($inBox)
+					
+					$form.Add($fileBtn.Name, $fileBtn)
+				}
+
+				##############################################
+				##############################################
+
+				if ($prmpt.InputType -eq [AnyBox.InputType]::FolderOpen) {
+					$filePanel = New-Object System.Windows.Controls.DockPanel
+					$filePanel.LastChildFill = $true
+					$filePanel.Margin = "0, 10, 0, 0"
+					# $filePanel.HorizontalAlignment = 'Stretch'
+
+					$fileBtn = New-Object System.Windows.Controls.Button
+					$fileBtn.Name = 'btn_' + $prmpt.Name
+					$fileBtn.Height = 25
+					$fileBtn.Width = 25
+					# $fileBtn.Margin = "0, 5, 0, 0"
+
+					# $inBox.Margin = "0, 5, 0, 0"
+					$inBox.Padding = "0, 0, $($fileBtn.Width.ToString()), 0"
+
+					$fileBtn.ToolTip = 'Browse'
+					$fileBtn.Content = '...'
+
+					$fileBtn.add_Click({
+					    [string]$inBoxName = $_.Source.Name.Replace('btn_','')
+							$opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
+							$opnWin.Description = 'Select folder'
+							$opnWin.ShowNewFolderButton = $true
+                            #$opnWin.SelectedPath = $SelectedPath
+						if ($opnWin.ShowDialog()) {
+							if (-not (Test-Path $opnWin.SelectedPath)) {
+								Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons $ok_btn
+							}
+							else {
+								$form[$inBoxName].Text = $opnWin.SelectedPath
+							}
+						}
+					})
 
 					$filePanel.AddChild($fileBtn)
 					# $filePanel.AddChild($inBox)
