@@ -1,7 +1,7 @@
 Add-Type -TypeDefinition @"
 namespace AnyBox {
 	public enum InputType {
-		None, Text, FileOpen, FileSave, Checkbox, Password, Date, Link
+		None, Text, FileOpen, FileSave, FolderOpen, Checkbox, Password, Date, Link
 	};
 	
 	public enum MessagePosition { Top, Left };
