@@ -5,6 +5,7 @@ function New-AnyBoxButton
 		[ValidateNotNull()]
 		[string]$Text,
 		[string]$Name,
+		[string]$ToolTip,
 		[switch]$IsCancel,
 		[switch]$IsDefault,
 		[System.Management.Automation.ScriptBlock]$OnClick
@@ -19,6 +20,7 @@ function New-AnyBoxButton
 
 	$b.Name = $Name
 	$b.Text = $Text
+	$b.ToolTip = $ToolTip
 	$b.IsCancel = $IsCancel -as [bool]
 	$b.IsDefault = $IsDefault -as [bool]
 	$b.OnClick = $OnClick

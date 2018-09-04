@@ -35,6 +35,7 @@ namespace AnyBox {
 	{
 		public string Name;
 		public string Text;
+		public string ToolTip;
 		public bool IsCancel = false;
 		public bool IsDefault = false;
 		public System.Management.Automation.ScriptBlock OnClick;

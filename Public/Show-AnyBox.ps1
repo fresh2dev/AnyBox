@@ -140,52 +140,6 @@ function Show-AnyBox
 
 	$form = @{'Result'=@{}} # [hashtable]::Synchronized(@{ 'Result' = @{})
 
-	[string[]]$action_btns = @()
-
-	if ($GridData -and -not $HideGridSearch) {
-		$action_btns += @('Explore', 'Save')
-	}
-
-	if ($ShowCopyButton -and $Message) {
-		$action_btns += 'Copy'
-	}
-
-	if ($Buttons -or $action_btns) {
-		if (-not $Buttons) {
-			$Buttons = @($action_btns)
-		}
-		else {
-			if ($Buttons.Length -eq 1) {
-				if ($Buttons[0] -is [AnyBox.Button]) {
-					$Buttons[0].IsDefault = $true
-				}
-				else { # string
-					$DefaultButton = $Buttons[0]
-				}
-			}
-
-			$Buttons | where { $_ -is [string] -or -not $_.OnClick } | ForEach-Object {
-				if ($_ -is [AnyBox.Button]) {
-					if ($_.Name) {
-						$form.Result.Add($_.Name, $false)
-					}
-					else {
-						$form.Result.Add($_.Text, $false)
-					}
-				}
-				else { # string
-					$form.Result.Add($_ -as [string], $false)
-				}
-			}
-
-			if ($action_btns) {
-				[System.Collections.ArrayList]$Buttons = [System.Collections.ArrayList]$Buttons
-				$Buttons.InsertRange(1, $action_btns)
-			}
-			# $Buttons = @($Buttons | Select-Object -Unique)
-		}
-	}
-
 	[xml]$xaml = @"
 <Window
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -943,6 +897,29 @@ function Show-AnyBox
 
 	if ($Buttons.Count -gt 0)
 	{
+		if ($Buttons.Count -eq 1) {
+			if ($Buttons[0] -is [AnyBox.Button]) {
+				$Buttons[0].IsDefault = $true
+			}
+			else { # string
+				$DefaultButton = $Buttons[0]
+			}
+		}
+
+		$Buttons | where { $_ -is [string] -or -not $_.OnClick } | ForEach-Object {
+			if ($_ -is [AnyBox.Button]) {
+				if ($_.Name) {
+					$form.Result.Add($_.Name, $false)
+				}
+				else {
+					$form.Result.Add($_.Text, $false)
+				}
+			}
+			else { # string
+				$form.Result.Add($_ -as [string], $false)
+			}
+		}
+
 		[int]$btn_per_row = [math]::Ceiling($Buttons.Count / ([double]$ButtonRows))
 
 		[uint16]$c = 0
@@ -954,7 +931,8 @@ function Show-AnyBox
 			$btnStack.HorizontalAlignment = 'Center'
 			$btnStack.Margin = "0, 10, 0, 0"
 
-			for ($i = 0; $i -lt $btn_per_row -and $c -lt $Buttons.Count; $i++) {
+			for ($i = 0; $i -lt $btn_per_row -and $c -lt $Buttons.Count; $i++)
+			{
 				$btn = New-Object System.Windows.Controls.Button
 				$btn.MinHeight = 35
 				$btn.MinWidth = 75
@@ -967,6 +945,7 @@ function Show-AnyBox
 				{
 					$btn.Name = $Buttons[$c].Name
 					$btn.Content = '_' + $Buttons[$c].Text
+					$btn.ToolTip = $Buttons[$c].ToolTip
 					$btn.IsCancel = $Buttons[$c].IsCancel
 					$btn.IsDefault = $Buttons[$c].IsDefault
 
@@ -1015,66 +994,28 @@ $form.Result | Foreach-Object -Process {{
 					# $btn.Name = $Buttons[$c]
 					$btn.Content = '_' + ($Buttons[$c] -as [string])
 
-					if ($Buttons[$c] -eq 'Explore') {
-						$btn.ToolTip = 'Explore data in a separate grid window.'
-						$btn.add_Click({ $form.data_grid.Items | Select-Object * | Out-GridView -Title ' ' })
-					}
-					elseif ($Buttons[$c] -eq 'Copy') {
-						$btn.ToolTip = 'Copy the message to the clipboard.'
+					if ($CancelButton -eq $Buttons[$c]) {
 						$btn.add_Click({
-							if ($form.txt_Message.Text) {
-								try {
-									[System.Windows.Clipboard]::SetDataObject($form.txt_Message.Text, $true)
-								}
-								catch {
-									$null = Show-AnyBox @childWinParams -Message 'Error accessing clipboard' -Buttons $ok_btn
-								}
-							}
+							[string]$btn_name = $_.Source.Content.TrimStart('_')
+							$form.Result[$btn_name] = $true
+							$form.Window.Close()
 						})
-					}
-					elseif ($Buttons[$c] -eq 'Save') {
-						$btn.ToolTip = 'Save data to a CSV file.'
-						$btn.add_Click({
-							try {
-								$savWin = New-Object Microsoft.Win32.SaveFileDialog
-								$savWin.InitialDirectory = "$env:USERPROFILE\Desktop"
-								$savWin.FileName = 'data.csv'
-								$savWin.Filter = 'CSV File (*.csv)|*.csv'
-								$savWin.OverwritePrompt = $true
-								if ($savWin.ShowDialog()) {
-									$form.data_grid.Items | Export-Csv -Path $savWin.FileName -NoTypeInformation -Encoding ASCII -Force
-									Start-Process -FilePath $savWin.FileName
-								}
-							}
-							catch {
-								$null = Show-AnyBox @childWinParams -Message $_.Exception.Message -Buttons $ok_btn
-							}
-						})
+						$btn.IsCancel = $true
 					}
 					else {
-						if ($CancelButton -eq $Buttons[$c]) {
-							$btn.add_Click({
+						$btn.add_Click({
+							$input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
+							if (-not $input_test.Is_Valid) {
+								$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $ok_btn
+							}
+							else {
 								[string]$btn_name = $_.Source.Content.TrimStart('_')
 								$form.Result[$btn_name] = $true
 								$form.Window.Close()
-							})
-							$btn.IsCancel = $true
-						}
-						else {
-							$btn.add_Click({
-								$input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
-								if (-not $input_test.Is_Valid) {
-									$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $ok_btn
-								}
-								else {
-									[string]$btn_name = $_.Source.Content.TrimStart('_')
-									$form.Result[$btn_name] = $true
-									$form.Window.Close()
-							}})
+						}})
 
-							if ($DefaultButton -eq $Buttons[$c]) {
-								$btn.IsDefault = $true
-							}
+						if ($DefaultButton -eq $Buttons[$c]) {
+							$btn.IsDefault = $true
 						}
 					}
 				}
