@@ -408,7 +408,7 @@ function Show-AnyBox
 					}
 
 					if ($prmpt.DefaultValue) {
-						$inBox.SelectedItem = $prmpt.DefaultValue
+						$inBox.SelectedItem = $inBox.Items | where { $_.Text -eq $prmpt.DefaultValue } | select -First 1
 					}
 
 					$inBox.add_SelectionChanged({
