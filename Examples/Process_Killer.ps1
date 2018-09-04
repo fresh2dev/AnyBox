@@ -11,7 +11,9 @@ $b = @(New-Button -Text 'Refresh' -IsDefault -OnClick {
 
   # Run 'Test-ValidateInput' to enforce
   # the validation parameters set on the 'pcName' prompt.
-  if (-not (Test-ValidInput)) {
+  $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
+  if (-not $input_test.Is_Valid) {
+    $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $(New-AnyBoxButton -Text 'OK' -IsDefault)
     $form['data_grid'].ItemsSource = $null
   }
   else {
@@ -46,7 +48,9 @@ $b = @(New-Button -Text 'Refresh' -IsDefault -OnClick {
 $b += @(New-Button -Text 'Kill' -OnClick {
   # Run 'Test-ValidateInput' to enforce
   # the validation parameters set on the 'pcName' prompt.
-  if (-not (Test-ValidInput)) {
+  $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
+  if (-not $input_test.Is_Valid) {
+    $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $(New-AnyBoxButton -Text 'OK' -IsDefault)
     $form['data_grid'].ItemsSource = $null
   }
   else {

@@ -78,7 +78,7 @@
 	# ModuleList = @()
 
 	# List of all files packaged with this module
-	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'HelperFunctions.ps1', 'AnyBoxPrompt.ps1', 'Show-AnyBox.ps1'
+	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'Show-AnyBox.ps1', 'New-AnyBoxPrompt.ps1', 'New-AnyBoxButton.ps1', 'ConvertTo-Base64.ps1'
 
 	# HelpInfo URI of this module
 	HelpInfoURI = 'https://www.donaldmellenbruch.com/post/introducing-the-anybox'

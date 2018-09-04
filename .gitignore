@@ -1,6 +1,6 @@
+.vs
 .vscode
 thumbs.db
-testing.ps1
-.vs
 *.pssproj
 *.sln
+.DS_Store
