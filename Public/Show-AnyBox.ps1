@@ -518,7 +518,8 @@ function Show-AnyBox
 
 				##############################################
 
-				if ($prmpt.InputType -eq [AnyBox.InputType]::FileOpen -or $prmpt.InputType -eq [AnyBox.InputType]::FileSave) {
+				if (@([AnyBox.InputType]::FileOpen, [AnyBox.InputType]::FileSave, [AnyBox.InputType]::FolderOpen) -contains $prmpt.InputType)
+				{
 					$filePanel = New-Object System.Windows.Controls.DockPanel
 					$filePanel.LastChildFill = $true
 					$filePanel.Margin = "0, 10, 0, 0"
@@ -553,8 +554,8 @@ function Show-AnyBox
 							}
 						})
 					}
-					else
-					{	# if ($prmpt.InputType -eq [AnyBox.InputType]::FileSave) {
+					elseif ($prmpt.InputType -eq [AnyBox.InputType]::FileSave)
+					{
 						$fileBtn.add_Click({
 							[string]$inBoxName = $_.Source.Name.Replace('btn_','')
 							$savWin = New-Object Microsoft.Win32.SaveFileDialog
@@ -562,6 +563,22 @@ function Show-AnyBox
 							$savWin.OverwritePrompt = $false
 							if ($savWin.ShowDialog() -and $savWin.FileName) {
 								$form[$inBoxName].Text = $savWin.FileName
+							}
+						})
+					}
+					else { # [AnyBox.InputType]::FolderOpen
+						$fileBtn.add_Click({
+							[string]$inBoxName = $_.Source.Name.Replace('btn_','')
+							$opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
+							$opnWin.Description = 'Select Folder'
+							$opnWin.ShowNewFolderButton = $true
+							if ($opnWin.ShowDialog()) {
+								if (-not (Test-Path $opnWin.SelectedPath)) {
+									Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons $ok_btn
+								}
+								else {
+									$form[$inBoxName].Text = $opnWin.SelectedPath
+								}
 							}
 						})
 					}
