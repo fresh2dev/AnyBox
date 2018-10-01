@@ -1,6 +1,6 @@
 @{
 	# Script module or binary module file associated with this manifest.
-	RootModule = 'AnyBox.psm1'
+	ModuleToProcess = 'AnyBox.psm1'
 
 	# Version number of this module.
 	ModuleVersion = '0.3.3'
@@ -78,7 +78,9 @@
 	# ModuleList = @()
 
 	# List of all files packaged with this module
-	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'Show-AnyBox.ps1', 'New-AnyBoxPrompt.ps1', 'New-AnyBoxButton.ps1', 'Get-Base64.ps1'
+	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'Types\AnyBox.ps1',
+	'Public\Show-AnyBox.ps1', 'Public\New-AnyBoxPrompt.ps1', 'Public\New-AnyBoxButton.ps1', 'Public\Get-Base64.ps1',
+	'Private\ConvertTo-BitmapImage.ps1', 'Private\ConvertTo-Long.ps1', 'Private\New-TextBlock.ps1', 'Private\Test-ValidInput.ps1'
 
 	# HelpInfo URI of this module
 	HelpInfoURI = 'https://www.donaldmellenbruch.com/project/anybox'
