@@ -28,9 +28,6 @@ function Show-AnyBox
 		The name of the button to designate as the 'Default' button. This button will be selected
 		if the user presses the 'ENTER' key. The 'Default' button, as with all other non-Cancel buttons,
 		will validate user input before closing the window.
-	.PARAMETER ShowCopyButton
-		If specified, a special button named 'Copy' will appear, and allow users to copy the provided
-		message to the clipboard.
 	.PARAMETER ButtonRows
 		The number of rows used when adding the buttons.
 	.PARAMETER Comment
@@ -92,13 +89,13 @@ function Show-AnyBox
 		[object[]]$Buttons,
 		[string]$CancelButton,
 		[string]$DefaultButton,
-		[switch]$ShowCopyButton,
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$ButtonRows = 1,
 		[string[]]$Comment,
 		[ValidateSet('Left', 'Center')]
 		[string]$ContentAlignment = 'Left',
 		[switch]$CollapsibleGroups,
+		[switch]$CollapsedGroups,
 		[scriptblock]$PrepScript,
 
 		[ValidateNotNullOrEmpty()]
@@ -130,7 +127,8 @@ function Show-AnyBox
 		[switch]$GridAsList,
 		[ValidateSet('None', 'SingleCell', 'SingleRow', 'MultiRow')]
 		[string]$SelectionMode = 'SingleCell',
-		[switch]$HideGridSearch
+		[Alias('HideGridSearch')]
+		[switch]$NoGridSearch
 	)
 
 	if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
@@ -152,13 +150,15 @@ function Show-AnyBox
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
-			<StackPanel Name="highStack" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
-
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel Name="highStack" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+			</ScrollViewer>
+			
 			<DataGrid Name='data_grid' Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" Visibility="Collapsed"/>
 
 			<StackPanel Name="lowStack" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
@@ -202,7 +202,7 @@ function Show-AnyBox
 		FontSize = $FontSize
 		FontColor = $FontColor
 		BackgroundColor = $BackgroundColor
-		HideGridSearch = $true
+		NoGridSearch = $true
 		WindowStyle = 'None'
 		ResizeMode = 'NoResize'
 		NoResize = $true
@@ -212,8 +212,6 @@ function Show-AnyBox
 		Topmost = $true
 		ParentWindow = $form.Window
 	}
-
-	$ok_btn = New-AnyBoxButton -Text 'OK' -IsDefault
 
 	if ($ParentWindow) {
 		$form.Window.Owner = $ParentWindow
@@ -254,7 +252,7 @@ function Show-AnyBox
 	}
 
 	# Add message textblocks.
-	if (($txtMsg = New-TextBlock -RefForm ([ref]$Form) -Text $($Message -join [environment]::NewLine) -Name 'txt_Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+	if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -Text $($Message -join [environment]::NewLine) -Name 'Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
 	{
 		$form.highStack.AddChild($txtMsg)
 	}
@@ -264,7 +262,7 @@ function Show-AnyBox
 	[scriptblock]$addMsgBox = {
 		param($p)
 
-		if (($inPrmpt = New-TextBlock -RefForm ([ref]$Form) -Text $p.Message -FontFamily $p.FontFamily -FontSize $p.FontSize -FontColor $p.FontColor -ContentAlignment $p.Alignment))
+		if (($inPrmpt = New-TextBlock -RefForm ([ref]$form) -Text $p.Message -FontFamily $p.FontFamily -FontSize $p.FontSize -FontColor $p.FontColor -ContentAlignment $p.Alignment))
 		{
 			if ($p.Collapsible) {
 				$inPrmpt.Margin = 0
@@ -291,421 +289,442 @@ function Show-AnyBox
 		$tab_panel.Margin = '0, 10, 0, 0'
 		$tab_panel.Padding = "5, 0, 5, 10"
 		$tab_panel.Background = 'Transparent'
+		$form.Add('Tabs', $tab_panel)
 	}
 
-	$Prompts | Group-Object -Property 'Tab', 'Group' | foreach {
+	$Prompts | Group-Object -Property 'Tab' | sort Name | foreach {
 		$tabName = $_.Values[0]
-		$groupName = $_.Values[1]
 
-		$group_stack = $null
+		$tab_stack = $null
 
-		if ($tab_panel -or $groupName) {
-			$group_stack = New-Object System.Windows.Controls.StackPanel
-			$group_stack.HorizontalAlignment = 'Stretch'
-			$group_stack.VerticalAlignment = 'Stretch'
-			$group_stack.Margin = '5, 0, 5, 0'
+		if ($tab_panel) {
+			$tab_stack = New-Object System.Windows.Controls.StackPanel
+			$tab_stack.HorizontalAlignment = 'Stretch'
+			$tab_stack.VerticalAlignment = 'Stretch'
+			$tab_stack.Margin = '5, 0, 5, 0'
 		}
 
-		# Add prompt-message textblocks and input textboxes.
-		foreach ($prmpt in $_.Group)
-		{
-			$inBox = $null
-			$inPanel = $null # when 'MessagePosition' = 'Left'
-			$expander = $null # when 'Collapsible' = $true
+		$_.Group | Group-Object -Property 'Group' | sort Name | foreach {
 
-			if ($prmpt -is [string]) {
-				$prmpt = New-AnyBoxPrompt -Name "Input_$i" -Message $prmpt
-				$Prompts[$i] = $prmpt
-			}
-			elseif (-not $prmpt.Name) {
-				$prmpt.Name = "Input_$i"
+			$groupName = $_.Values[0]
+
+			$group_stack = $null
+
+			if ($tab_panel -or $groupName) {
+				$group_stack = New-Object System.Windows.Controls.StackPanel
+				$group_stack.HorizontalAlignment = 'Stretch'
+				$group_stack.VerticalAlignment = 'Stretch'
+				$group_stack.Margin = '5, 0, 5, 0'
 			}
 
-			$form.Result.Add($prmpt.Name, $prmpt.DefaultValue)
-
-			if (-not $prmpt.Alignment) { $prmpt.Alignment = $ContentAlignment }
-			if (-not $prmpt.FontFamily) { $prmpt.FontFamily = $FontFamily }
-			if (-not $prmpt.FontSize) { $prmpt.FontSize = $FontSize }
-			if (-not $prmpt.FontColor) { $prmpt.FontColor = $FontColor }
-
-			if ($prmpt.Collapsible) {
-				$expander = New-Object System.Windows.Controls.Expander
-				$expander.BorderThickness = 1
-				$expander.BorderBrush = $AccentColor
-				$expander.Padding = 3
-				$expander.IsExpanded = $true
-				$expander.VerticalAlignment = 'Center'
-				$expander.VerticalContentAlignment = 'Center'
-				$expander.HorizontalAlignment = 'Stretch'
-				$expander.HorizontalContentAlignment = 'Stretch'
-			}
-			elseif ($prmpt.MessagePosition -eq [AnyBox.MessagePosition]::Left) {
-				$inPanel = New-Object System.Windows.Controls.DockPanel
-				$inPanel.LastChildFill = $true
-			}
-
-			if ($prmpt.ValidateSet)
+			# Add prompt-message textblocks and input textboxes.
+			foreach ($prmpt in $_.Group)
 			{
-				& $addMsgBox $prmpt
+				$inBox = $null
+				$inPanel = $null # when 'MessagePosition' = 'Left'
+				$expander = $null # when 'Collapsible' = $true
 
-				if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::ComboBox)
+				if ($prmpt -is [string]) {
+					$prmpt = New-AnyBoxPrompt -Name "Input_$i" -Message $prmpt
+					$Prompts[$i] = $prmpt
+				}
+				elseif (-not $prmpt.Name) {
+					$prmpt.Name = "Input_$i"
+				}
+
+				$form.Result.Add($prmpt.Name, $prmpt.DefaultValue)
+
+				if (-not $prmpt.Alignment) { $prmpt.Alignment = $ContentAlignment }
+				if (-not $prmpt.FontFamily) { $prmpt.FontFamily = $FontFamily }
+				if (-not $prmpt.FontSize) { $prmpt.FontSize = $FontSize }
+				if (-not $prmpt.FontColor) { $prmpt.FontColor = $FontColor }
+
+				if ($prmpt.Collapsible) {
+					$expander = New-Object System.Windows.Controls.Expander
+					$expander.BorderThickness = 1
+					$expander.BorderBrush = $AccentColor
+					$expander.Padding = 3
+					$expander.IsExpanded = $(-not $prmpt.Collapsed)
+					$expander.VerticalAlignment = 'Center'
+					$expander.VerticalContentAlignment = 'Center'
+					$expander.HorizontalAlignment = 'Stretch'
+					$expander.HorizontalContentAlignment = 'Stretch'
+				}
+				elseif ($prmpt.MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+					$inPanel = New-Object System.Windows.Controls.DockPanel
+					$inPanel.LastChildFill = $true
+				}
+
+				if ($prmpt.ValidateSet)
 				{
-					$inBox = New-Object System.Windows.Controls.ComboBox
-					$inBox.MinHeight = 25
-					$inBox.IsReadOnly = $true
-					$inBox.HorizontalContentAlignment = $prmpt.Alignment
-					$inBox.VerticalAlignment = 'Center'
-					$inBox.VerticalContentAlignment = 'Center'
+					& $addMsgBox $prmpt
 
-					$prmpt.ValidateSet | foreach {
-						$null = $inBox.Items.Add((New-TextBlock -RefForm ([ref]$Form) -Text $_ -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor 'Black' -Margin 0 -ContentAlignment $prmpt.Alignment))
+					if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::ComboBox)
+					{
+						$inBox = New-Object System.Windows.Controls.ComboBox
+						$inBox.MinHeight = 25
+						$inBox.IsReadOnly = $true
+						$inBox.HorizontalContentAlignment = $prmpt.Alignment
+						$inBox.VerticalAlignment = 'Center'
+						$inBox.VerticalContentAlignment = 'Center'
+
+						$prmpt.ValidateSet | foreach {
+							$null = $inBox.Items.Add((New-TextBlock -RefForm ([ref]$form) -Text $_ -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor 'Black' -Margin 0 -ContentAlignment $prmpt.Alignment))
+						}
+
+						if ($prmpt.DefaultValue) {
+							$inBox.SelectedItem = $inBox.Items | where { $_.Text -eq $prmpt.DefaultValue } | select -First 1
+						}
+
+						$inBox.add_SelectionChanged({
+							$form.Result[$_.Source.Name] = $_.Source.SelectedItem.Text
+						})
 					}
+					else
+					{	# radio
+						$inBox = New-Object System.Windows.Controls.StackPanel
+						$inBox.HorizontalAlignment = $prmpt.Alignment
+						if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::Radio_Wide) {
+							$inBox.Orientation = 'Horizontal'
+						}
 
-					if ($prmpt.DefaultValue) {
-						$inBox.SelectedItem = $inBox.Items | where { $_.Text -eq $prmpt.DefaultValue } | select -First 1
+						$prmpt.ValidateSet | foreach {
+							$r = New-Object System.Windows.Controls.RadioButton
+							if ($prmpt.RadioGroup) {
+								$r.GroupName = $prmpt.RadioGroup
+							}
+							else {
+								$r.GroupName = "Group_$i"
+							}
+							$r.Content = $_
+							$r.Margin = '5, 5, 0, 0'
+							$r.Padding = 0
+							$r.IsChecked = $($_ -eq $prmpt.DefaultValue)
+							$r.FontSize = $prmpt.FontSize
+							$r.FontFamily = $prmpt.FontFamily
+							$r.Foreground = $prmpt.FontColor
+							# $r.VerticalAlignment = 'Center'
+							$r.VerticalContentAlignment = 'Center'
+							$r.HorizontalAlignment = 'Left'
+							$r.HorizontalContentAlignment = 'Left'
+
+							$r.add_Unchecked({
+								if ($form.Result[$_.Source.Parent.Name] -eq $_.Source.Content) {
+									$form.Result[$_.Source.Parent.Name] = $null
+								}
+							})
+
+							$r.add_Checked({
+								$form.Result[$_.Source.Parent.Name] = $_.Source.Content
+							})
+
+							$inBox.AddChild($r)
+						}
 					}
+				}
+				elseif ($prmpt.InputType -eq [AnyBox.InputType]::Checkbox)
+				{ # Check box
+					$inBox = New-Object System.Windows.Controls.CheckBox
+					$inBox.Content = $prmpt.Message
+					$inBox.FontSize = $prmpt.FontSize
+					$inBox.FontFamily = $prmpt.FontFamily
+					$inBox.Foreground = $prmpt.FontColor
+					$inBox.IsChecked = $($prmpt.DefaultValue -eq [bool]::TrueString)
+					$inBox.HorizontalAlignment = $prmpt.Alignment
+					$inBox.HorizontalContentAlignment = 'Left'
 
-					$inBox.add_SelectionChanged({
-						$form.Result[$_.Source.Name] = $_.Source.SelectedItem.Text
+					$inBox.add_Click({
+						$form.Result[$_.Source.Name] = $_.Source.IsChecked
 					})
 				}
-				else
-				{	# radio
-					$inBox = New-Object System.Windows.Controls.StackPanel
-					$inBox.HorizontalAlignment = $prmpt.Alignment
-					if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::Radio_Wide) {
-						$inBox.Orientation = 'Horizontal'
-					}
+				elseif ($prmpt.InputType -eq [AnyBox.InputType]::Password)
+				{	# Password box
+					& $addMsgBox $prmpt
 
-					$prmpt.ValidateSet | foreach {
-						$r = New-Object System.Windows.Controls.RadioButton
-						if ($prmpt.RadioGroup) {
-							$r.GroupName = $prmpt.RadioGroup
-						}
-						else {
-							$r.GroupName = "Group_$i"
-						}
-						$r.Content = $_
-						$r.Margin = '5, 5, 0, 0'
-						$r.Padding = 0
-						$r.IsChecked = $($_ -eq $prmpt.DefaultValue)
-						$r.FontSize = $prmpt.FontSize
-						$r.FontFamily = $prmpt.FontFamily
-						$r.Foreground = $prmpt.FontColor
-						# $r.VerticalAlignment = 'Center'
-						$r.VerticalContentAlignment = 'Center'
-						$r.HorizontalAlignment = 'Left'
-						$r.HorizontalContentAlignment = 'Left'
+					$inBox = New-Object System.Windows.Controls.PasswordBox
+					$inBox.MinHeight = 25
+					$inBox.Padding = '3, 0, 0, 0'
+					# $inBox.HorizontalAlignment = 'Stretch'
+					$inBox.HorizontalContentAlignment = $prmpt.Alignment
+					$inBox.VerticalContentAlignment = 'Center'
+					$inBox.VerticalAlignment = 'Center'
+					# $inBox.FontStyle = 'Normal'
+					$inBox.Background = 'WhiteSmoke'
 
-						$r.add_Unchecked({
-							if ($form.Result[$_.Source.Parent.Name] -eq $_.Source.Content) {
-								$form.Result[$_.Source.Parent.Name] = $null
-							}
-						})
-
-						$r.add_Checked({
-							$form.Result[$_.Source.Parent.Name] = $_.Source.Content
-						})
-
-						$inBox.AddChild($r)
-					}
+					$inBox.add_PasswordChanged({
+						$form.Result[$_.Source.Name] = $_.Source.SecurePassword
+					})
 				}
-			}
-			elseif ($prmpt.InputType -eq [AnyBox.InputType]::Checkbox)
-			{ # Check box
-				$inBox = New-Object System.Windows.Controls.CheckBox
-				$inBox.Content = $prmpt.Message
-				$inBox.FontSize = $prmpt.FontSize
-				$inBox.FontFamily = $prmpt.FontFamily
-				$inBox.Foreground = $prmpt.FontColor
-				$inBox.IsChecked = $($prmpt.DefaultValue -eq [bool]::TrueString)
-				$inBox.HorizontalAlignment = $prmpt.Alignment
-				$inBox.HorizontalContentAlignment = 'Left'
+				elseif ($prmpt.InputType -eq [AnyBox.InputType]::Date)
+				{	# Date picker
+					& $addMsgBox $prmpt
 
-				$inBox.add_Click({
-					$form.Result[$_.Source.Name] = $_.Source.IsChecked
-				})
-			}
-			elseif ($prmpt.InputType -eq [AnyBox.InputType]::Password)
-			{	# Password box
-				& $addMsgBox $prmpt
-
-				$inBox = New-Object System.Windows.Controls.PasswordBox
-				$inBox.MinHeight = 25
-				$inBox.Padding = '3, 0, 0, 0'
-				# $inBox.HorizontalAlignment = 'Stretch'
-				$inBox.HorizontalContentAlignment = $prmpt.Alignment
-				$inBox.VerticalContentAlignment = 'Center'
-				$inBox.VerticalAlignment = 'Center'
-				# $inBox.FontStyle = 'Normal'
-				$inBox.Background = 'WhiteSmoke'
-
-				$inBox.add_PasswordChanged({
-					$form.Result[$_.Source.Name] = $_.Source.SecurePassword
-				})
-			}
-			elseif ($prmpt.InputType -eq [AnyBox.InputType]::Date)
-			{	# Date picker
-				& $addMsgBox $prmpt
-
-				$inBox = New-Object System.Windows.Controls.DatePicker
-				$inBox.HorizontalContentAlignment = $prmpt.Alignment
-				$inBox.DisplayDate = [datetime]::Today
-				$inBox.DisplayDateStart = [datetime]::MinValue
-				$inBox.DisplayDateEnd = [datetime]::MaxValue
-				$inBox.SelectedDateFormat = [System.Windows.Controls.DatePickerFormat]::Short
-				$inBox.Text = $prmpt.DefaultValue
-				$inBox.Background = 'WhiteSmoke'
-
-				$inBox.add_SelectedDateChanged({
-					$form.Result[$_.Source.Name] = $_.Source.Text
-				})
-			}
-			elseif ($prmpt.InputType -eq [AnyBox.InputType]::Link)
-			{ # Hyperlink
-				$inBox = New-TextBlock -RefForm ([ref]$Form) -text $prmpt.Message -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor $prmpt.FontColor -ContentAlignment $prmpt.Alignment
-				$inBox.TextDecorations = 'Underline'
-				$inBox.Cursor = 'Hand'
-				$inBox.Tooltip = $prmpt.DefaultValue
-				[string]$onClick = $null # "`$_.Source.Foreground = 'Navy'; "
-				if ($prmpt.DefaultValue) {
-					$onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.DefaultValue)'"
-				}
-				else {
-					$onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.Message)'"
-				}
-				$inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
-			}
-			else
-			{	# Text box
-				& $addMsgBox $prmpt
-
-				$inBox = New-Object System.Windows.Controls.TextBox
-				$inBox.MinHeight = 25
-				$inBox.Padding = '3, 0, 0, 0'
-				$inBox.HorizontalContentAlignment = $prmpt.Alignment
-				$inBox.TextAlignment = $prmpt.Alignment
-				$inBox.VerticalContentAlignment = 'Center'
-				$inBox.AcceptsTab = $false
-				$inBox.TextWrapping = 'NoWrap'
-				$inBox.Background = 'WhiteSmoke'
-				$inBox.IsReadOnly = $prmpt.ReadOnly
-				$inBox.IsEnabled = (-not $prmpt.ReadOnly)
-
-				if ($prmpt.DefaultValue -ne $null) {
+					$inBox = New-Object System.Windows.Controls.DatePicker
+					$inBox.HorizontalContentAlignment = $prmpt.Alignment
+					$inBox.DisplayDate = [datetime]::Today
+					$inBox.DisplayDateStart = [datetime]::MinValue
+					$inBox.DisplayDateEnd = [datetime]::MaxValue
+					$inBox.SelectedDateFormat = [System.Windows.Controls.DatePickerFormat]::Short
 					$inBox.Text = $prmpt.DefaultValue
+					$inBox.Background = 'WhiteSmoke'
+
+					$inBox.add_SelectedDateChanged({
+						$form.Result[$_.Source.Name] = $_.Source.Text
+					})
+				}
+				elseif ($prmpt.InputType -eq [AnyBox.InputType]::Link)
+				{ # Hyperlink
+					$inBox = New-TextBlock -RefForm ([ref]$form) -Text $prmpt.Message -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor $prmpt.FontColor -ContentAlignment $prmpt.Alignment
+					$form.Result[$prmpt.Name] = $false
+					$inBox.TextDecorations = 'Underline'
+					$inBox.Cursor = 'Hand'
+					$inBox.Tooltip = $prmpt.DefaultValue
+					[string]$onClick = $null # "`$_.Source.Foreground = 'Navy'; "
+					if ($prmpt.DefaultValue) {
+						$onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.DefaultValue)'"
+					}
+					else {
+						$onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.Message)'"
+					}
+					$inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
+				}
+				else
+				{	# Text box
+					& $addMsgBox $prmpt
+
+					$inBox = New-Object System.Windows.Controls.TextBox
+					$inBox.MinHeight = 25
+					$inBox.Padding = '3, 0, 0, 0'
+					$inBox.HorizontalContentAlignment = $prmpt.Alignment
+					$inBox.TextAlignment = $prmpt.Alignment
+					$inBox.VerticalContentAlignment = 'Center'
+					$inBox.AcceptsTab = $false
+					$inBox.TextWrapping = 'NoWrap'
+					$inBox.Background = 'WhiteSmoke'
+					$inBox.IsReadOnly = $prmpt.ReadOnly
+					$inBox.IsEnabled = (-not $prmpt.ReadOnly)
+
+					if ($prmpt.DefaultValue -ne $null) {
+						$inBox.Text = $prmpt.DefaultValue
+					}
+
+					if ($prmpt.LineHeight -gt 1)
+					{
+						$inBox.AcceptsReturn = $true
+						$inBox.TextWrapping = 'Wrap'
+						$inBox.MinWidth = 75
+						$inBox.MaxHeight = 25 * $prmpt.LineHeight
+						$inBox.Height = $inBox.MaxHeight
+					}
+					else
+					{
+						$inBox.MaxHeight = 25 * @($prmpt.DefaultValue -split "`n").Count
+						$inBox.Height = $inBox.MaxHeight
+					}
+
+					$inBox.add_GotFocus({$_.Source.SelectAll()})
+
+					$inBox.add_TextChanged({
+						$form.Result[$_.Source.Name] = $_.Source.Text
+					})
+
+					##############################################
+
+					if (@([AnyBox.InputType]::FileOpen, [AnyBox.InputType]::FileSave, [AnyBox.InputType]::FolderOpen) -contains $prmpt.InputType)
+					{
+						$filePanel = New-Object System.Windows.Controls.DockPanel
+						$filePanel.LastChildFill = $true
+						$filePanel.Margin = "0, 10, 0, 0"
+						# $filePanel.HorizontalAlignment = 'Stretch'
+
+						$fileBtn = New-Object System.Windows.Controls.Button
+						$fileBtn.Name = 'btn_' + $prmpt.Name
+						$fileBtn.Height = 25
+						$fileBtn.Width = 25
+						# $fileBtn.Margin = "0, 5, 0, 0"
+
+						# $inBox.Margin = "0, 5, 0, 0"
+						$inBox.Padding = "0, 0, $($fileBtn.Width.ToString()), 0"
+
+						$fileBtn.ToolTip = 'Browse'
+						$fileBtn.Content = '...'
+
+						if ($prmpt.InputType -eq [AnyBox.InputType]::FileOpen)
+						{
+							$fileBtn.add_Click({
+								[string]$inBoxName = $_.Source.Name.Replace('btn_','')
+								$opnWin = New-Object Microsoft.Win32.OpenFileDialog
+								$opnWin.Title = 'Open File'
+								$opnWin.CheckFileExists = $true
+								if ($opnWin.ShowDialog()) {
+									if (-not (Test-Path $opnWin.FileName)) {
+										Show-AnyBox @childWinParams -Message 'File not found.' -Buttons 'OK' -DefaultButton 'OK'
+									}
+									else {
+										$form[$inBoxName].Text = $opnWin.FileName
+									}
+								}
+							})
+						}
+						elseif ($prmpt.InputType -eq [AnyBox.InputType]::FileSave)
+						{
+							$fileBtn.add_Click({
+								[string]$inBoxName = $_.Source.Name.Replace('btn_','')
+								$savWin = New-Object Microsoft.Win32.SaveFileDialog
+								$savWin.Title = 'Save File'
+								$savWin.OverwritePrompt = $false
+								if ($savWin.ShowDialog() -and $savWin.FileName) {
+									$form[$inBoxName].Text = $savWin.FileName
+								}
+							})
+						}
+						else { # [AnyBox.InputType]::FolderOpen
+							$fileBtn.add_Click({
+								[string]$inBoxName = $_.Source.Name.Replace('btn_','')
+								$opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
+								$opnWin.Description = 'Select Folder'
+								$opnWin.ShowNewFolderButton = $true
+								if ($opnWin.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+									if (-not (Test-Path $opnWin.SelectedPath)) {
+										Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons 'OK' -DefaultButton 'OK'
+									}
+									else {
+										$form[$inBoxName].Text = $opnWin.SelectedPath
+									}
+								}
+							})
+						}
+
+						$filePanel.AddChild($fileBtn)
+						# $filePanel.AddChild($inBox)
+
+						$form.Add($fileBtn.Name, $fileBtn)
+					}
+
+					##############################################
 				}
 
-				if ($prmpt.LineHeight -gt 1)
-				{
-					$inBox.AcceptsReturn = $true
-					$inBox.TextWrapping = 'Wrap'
-					$inBox.MinWidth = 75
-					$inBox.MaxHeight = 25 * $prmpt.LineHeight
-					$inBox.Height = $inBox.MaxHeight
+				$inBox.Name = $prmpt.Name.ToString()
+
+				$form.Add($inBox.Name, $inBox)
+
+				if ($filePanel) {
+					$filePanel.AddChild($inBox)
+					$inBox = $filePanel
+					$filePanel = $null
+				}
+
+				$toAdd = $null
+
+				if ($expander) {
+					$inBox.Margin = 0
+					$expander.Margin = "0, 10, 0, 0"
+					$expander.Content = $inBox
+					$toAdd = $expander
+					# $form.highStack.AddChild($expander)
 				}
 				else
 				{
-					$inBox.MaxHeight = 25 * @($prmpt.DefaultValue -split "`n").Count
-					$inBox.Height = $inBox.MaxHeight
-				}
+					$inBox.Margin = "0, 10, 0, 0"
 
-				$inBox.add_GotFocus({$_.Source.SelectAll()})
-
-				$inBox.add_TextChanged({
-					$form.Result[$_.Source.Name] = $_.Source.Text
-				})
-
-				##############################################
-
-				if (@([AnyBox.InputType]::FileOpen, [AnyBox.InputType]::FileSave, [AnyBox.InputType]::FolderOpen) -contains $prmpt.InputType)
-				{
-					$filePanel = New-Object System.Windows.Controls.DockPanel
-					$filePanel.LastChildFill = $true
-					$filePanel.Margin = "0, 10, 0, 0"
-					# $filePanel.HorizontalAlignment = 'Stretch'
-
-					$fileBtn = New-Object System.Windows.Controls.Button
-					$fileBtn.Name = 'btn_' + $prmpt.Name
-					$fileBtn.Height = 25
-					$fileBtn.Width = 25
-					# $fileBtn.Margin = "0, 5, 0, 0"
-
-					# $inBox.Margin = "0, 5, 0, 0"
-					$inBox.Padding = "0, 0, $($fileBtn.Width.ToString()), 0"
-
-					$fileBtn.ToolTip = 'Browse'
-					$fileBtn.Content = '...'
-
-					if ($prmpt.InputType -eq [AnyBox.InputType]::FileOpen)
-					{
-						$fileBtn.add_Click({
-							[string]$inBoxName = $_.Source.Name.Replace('btn_','')
-							$opnWin = New-Object Microsoft.Win32.OpenFileDialog
-							$opnWin.Title = 'Open File'
-							$opnWin.CheckFileExists = $true
-							if ($opnWin.ShowDialog()) {
-								if (-not (Test-Path $opnWin.FileName)) {
-									Show-AnyBox @childWinParams -Message 'File not found.' -Buttons $ok_btn
-								}
-								else {
-									$form[$inBoxName].Text = $opnWin.FileName
-								}
-							}
-						})
+					if ($inPanel) {
+						$inPanel.AddChild($inBox)
+						$toAdd = $inPanel
+						# $form.highStack.AddChild($inPanel)
 					}
-					elseif ($prmpt.InputType -eq [AnyBox.InputType]::FileSave)
-					{
-						$fileBtn.add_Click({
-							[string]$inBoxName = $_.Source.Name.Replace('btn_','')
-							$savWin = New-Object Microsoft.Win32.SaveFileDialog
-							$savWin.Title = 'Save File'
-							$savWin.OverwritePrompt = $false
-							if ($savWin.ShowDialog() -and $savWin.FileName) {
-								$form[$inBoxName].Text = $savWin.FileName
-							}
-						})
+					else {
+						$toAdd = $inBox
+						# $form.highStack.AddChild($inBox)
 					}
-					else { # [AnyBox.InputType]::FolderOpen
-						$fileBtn.add_Click({
-							[string]$inBoxName = $_.Source.Name.Replace('btn_','')
-							$opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
-							$opnWin.Description = 'Select Folder'
-							$opnWin.ShowNewFolderButton = $true
-							if ($opnWin.ShowDialog()) {
-								if (-not (Test-Path $opnWin.SelectedPath)) {
-									Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons $ok_btn
-								}
-								else {
-									$form[$inBoxName].Text = $opnWin.SelectedPath
-								}
-							}
-						})
-					}
-
-					$filePanel.AddChild($fileBtn)
-					# $filePanel.AddChild($inBox)
-
-					$form.Add($fileBtn.Name, $fileBtn)
 				}
-
-				##############################################
-			}
-
-			$inBox.Name = $prmpt.Name.ToString()
-
-			$form.Add($inBox.Name, $inBox)
-
-			if ($filePanel) {
-				$filePanel.AddChild($inBox)
-				$inBox = $filePanel
-				$filePanel = $null
-			}
-
-			$toAdd = $null
-
-			if ($expander) {
-				$inBox.Margin = 0
-				$expander.Margin = "0, 10, 0, 0"
-				$expander.Content = $inBox
-				$toAdd = $expander
-				# $form.highStack.AddChild($expander)
-			}
-			else
-			{
-				$inBox.Margin = "0, 10, 0, 0"
-
-				if ($inPanel) {
-					$inPanel.AddChild($inBox)
-					$toAdd = $inPanel
-					# $form.highStack.AddChild($inPanel)
-				}
-				else {
-					$toAdd = $inBox
-					# $form.highStack.AddChild($inBox)
-				}
-			}
-
-			if ($group_stack) {
-				$group_stack.AddChild($toAdd)
-			}
-			else {
-				$form.highStack.AddChild($toAdd)
-			}
-
-			if ($prmpt.ShowSeparator) {
-				$sep = New-Object System.Windows.Controls.Separator
-				$sep.Margin = "10, 10, 10, 0"
-				$sep.Background = $AccentColor
 
 				if ($group_stack) {
-					$group_stack.AddChild($sep)
+					$group_stack.AddChild($toAdd)
 				}
 				else {
-					$form.highStack.AddChild($sep)
+					$form.highStack.AddChild($toAdd)
+				}
+
+				if ($prmpt.ShowSeparator) {
+					$sep = New-Object System.Windows.Controls.Separator
+					$sep.Margin = "10, 10, 10, 0"
+					$sep.Background = $AccentColor
+
+					if ($group_stack) {
+						$group_stack.AddChild($sep)
+					}
+					else {
+						$form.highStack.AddChild($sep)
+					}
+				}
+
+				$inBox = $null
+				$inPanel = $null
+				$expander = $null
+				$i++
+			}
+		
+
+			if ($group_stack)
+			{
+				$group_box = $null
+				if ($groupName) {
+					if ($CollapsibleGroups) {
+						$group_box = New-Object System.Windows.Controls.Expander
+						$group_box.IsExpanded = $(-not $CollapsedGroups)
+					}
+					else {
+						$group_box = New-Object System.Windows.Controls.GroupBox
+					}
+
+					if ($groupName -imatch '[a-z]') {
+						$header = New-TextBlock -RefForm ([ref]$form) -text $groupName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
+						$header.VerticalAlignment = 'Center'
+						$header.HorizontalAlignment = 'Left'
+						$header.Margin = 0
+						$group_box.Header = $header
+					}
+
+					$group_box.Margin = '0, 10, 0, 0'
+					$group_box.BorderThickness = 1
+					$group_box.BorderBrush = $AccentColor
+					$group_box.Padding = 3
+					$group_box.VerticalAlignment = 'Center'
+					$group_box.VerticalContentAlignment = 'Center'
+					$group_box.HorizontalAlignment = 'Stretch'
+					$group_box.HorizontalContentAlignment = 'Stretch'
+
+					$group_box.Content = $group_stack
+				}
+
+				if (-not $tabName) {
+					if ($groupName) {
+						$form.highStack.AddChild($group_box)
+					}
+					else {
+						$form.highStack.AddChild($group_stack)
+					}
+				}
+				else {
+					if ($groupName) {
+						$tab_stack.AddChild($group_box)
+					}
+					else {
+						$tab_stack.AddChild($group_stack)
+					}
 				}
 			}
-
-			$inBox = $null
-			$inPanel = $null
-			$expander = $null
-			$i++
 		}
 
-		if ($group_stack)
-		{
-			$group_box = $null
-			if ($groupName) {
-				if ($CollapsibleGroups) {
-					$group_box = New-Object System.Windows.Controls.Expander
-					$group_box.IsExpanded = $true
-				}
-				else {
-					$group_box = New-Object System.Windows.Controls.GroupBox
-				}
+		if ($tab_panel) {
+			$tab = New-Object System.Windows.Controls.TabItem
+			$tab.Header = New-TextBlock -RefForm ([ref]$form) -text $tabName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -margin 0 -ContentAlignment $ContentAlignment
+			$tab.Content = $tab_stack
 
-				if ($groupName -imatch '[a-z]') {
-					$header = New-TextBlock -RefForm ([ref]$Form) -text $groupName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
-					$header.VerticalAlignment = 'Center'
-					$header.HorizontalAlignment = 'Left'
-					$header.Margin = 0
-					$group_box.Header = $header
-				}
-
-				$group_box.Margin = '0, 10, 0, 0'
-				$group_box.BorderThickness = 1
-				$group_box.BorderBrush = $AccentColor
-				$group_box.Padding = 3
-				$group_box.VerticalAlignment = 'Center'
-				$group_box.VerticalContentAlignment = 'Center'
-				$group_box.HorizontalAlignment = 'Stretch'
-				$group_box.HorizontalContentAlignment = 'Stretch'
-
-				$group_box.Content = $group_stack
-			}
-
-			if (-not $tabName) {
-				if ($groupName) {
-					$form.highStack.AddChild($group_box)
-				}
-				else {
-					$form.highStack.AddChild($group_stack)
-				}
-			}
-			else {
-				$tab = New-Object System.Windows.Controls.TabItem
-				$tab.Header = New-TextBlock -RefForm ([ref]$Form) -text $tabName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -margin 0 -ContentAlignment $ContentAlignment
-
-				if ($groupName) {
-					$tab.Content = $group_box
-				}
-				else {
-					$tab.Content = $group_stack
-				}
-				$null = $tab_panel.Items.Add($tab)
-			}
+			$null = $tab_panel.Items.Add($tab)
 		}
 	}
+	
 
 	if ($tab_panel) {
 		$form.highStack.AddChild($tab_panel)
@@ -789,11 +808,11 @@ function Show-AnyBox
 			}
 		})
 
-		if (-not $HideGridSearch)
+		if (-not $NoGridSearch)
 		{
-			$gridMsg = New-TextBlock -RefForm ([ref]$Form) -Text $('{0} Results' -f $GridData.Count) -Name 'txt_Grid' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
+			$gridMsg = New-TextBlock -RefForm ([ref]$form) -Text $('{0} Results' -f $GridData.Count) -Name 'txt_Grid' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
 			$form.highStack.AddChild($gridMsg)
-
+			
 			[scriptblock]$filterGrid = {
 				if (-not $form.filterText.Text) {
 					$form.data_grid.ItemsSource = $GridData
@@ -900,7 +919,7 @@ function Show-AnyBox
 	}
 
 	# Add comment textblocks.
-	if (($txtMsg = New-TextBlock -RefForm ([ref]$Form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
+	if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
 		$txtMsg.FontStyle = 'Italic'
 		$txtMsg.FontWeight = 'Normal'
 		$form.highStack.AddChild($txtMsg)
@@ -908,7 +927,7 @@ function Show-AnyBox
 
 	if ($Timeout -and $Timeout -gt 0 -and $Countdown) {
 		# Create countdown textblock.
-		$txtTime = New-TextBlock -RefForm ([ref]$Form) -Text '---' -Name 'txt_Countdown' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
+		$txtTime = New-TextBlock -RefForm ([ref]$form) -Text '---' -Name 'txt_Countdown' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
 		$form.highStack.AddChild($txtTime)
 	}
 
@@ -962,7 +981,9 @@ function Show-AnyBox
 				{
 					$btn.Name = $Buttons[$c].Name
 					$btn.Content = '_' + $Buttons[$c].Text
-					$btn.ToolTip = $Buttons[$c].ToolTip
+					if ($Buttons[$c].ToolTip) {
+						$btn.ToolTip = $Buttons[$c].ToolTip
+					}
 					$btn.IsCancel = $Buttons[$c].IsCancel
 					$btn.IsDefault = $Buttons[$c].IsDefault
 
@@ -991,7 +1012,7 @@ $form.Result | Foreach-Object -Process {{
 						$btn.add_Click({
 							$input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
 							if (-not $input_test.Is_Valid) {
-								$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $ok_btn
+								$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
 							}
 							else {
 								[string]$btn_name = $null
@@ -1023,7 +1044,7 @@ $form.Result | Foreach-Object -Process {{
 						$btn.add_Click({
 							$input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
 							if (-not $input_test.Is_Valid) {
-								$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons $ok_btn
+								$null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
 							}
 							else {
 								[string]$btn_name = $_.Source.Content.TrimStart('_')
@@ -1056,7 +1077,7 @@ $form.Result | Foreach-Object -Process {{
 		}
 
 		if ($GridData) {
-			if (-not $HideGridSearch) {
+			if (-not $NoGridSearch) {
 				$form.filterBy.ItemsSource = @($form.data_grid.Columns.Header)
 				$form.filterBy.SelectedIndex = 0
 			}

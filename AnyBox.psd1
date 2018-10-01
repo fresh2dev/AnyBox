@@ -3,7 +3,7 @@
 	RootModule = 'AnyBox.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '0.3.2'
+	ModuleVersion = '0.3.3'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = 'Desktop'
@@ -60,7 +60,7 @@
 	# NestedModules = @()
 
 	# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-	FunctionsToExport  = @('ConvertTo-Base64', 'New-AnyBoxPrompt', 'New-AnyBoxButton', 'Show-AnyBox')
+	FunctionsToExport  = @('Get-Base64', 'New-AnyBoxPrompt', 'New-AnyBoxButton', 'Show-AnyBox')
 
 	# Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 	CmdletsToExport    = @()
@@ -78,10 +78,10 @@
 	# ModuleList = @()
 
 	# List of all files packaged with this module
-	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'Show-AnyBox.ps1', 'New-AnyBoxPrompt.ps1', 'New-AnyBoxButton.ps1', 'ConvertTo-Base64.ps1'
+	FileList = 'AnyBox.psd1', 'AnyBox.psm1', 'Show-AnyBox.ps1', 'New-AnyBoxPrompt.ps1', 'New-AnyBoxButton.ps1', 'Get-Base64.ps1'
 
 	# HelpInfo URI of this module
-	HelpInfoURI = 'https://www.donaldmellenbruch.com/post/introducing-the-anybox'
+	HelpInfoURI = 'https://www.donaldmellenbruch.com/project/anybox'
 
 	# Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 	PrivateData = @{
@@ -93,13 +93,13 @@
 			# LicenseUri = ''
 
 			# A URL to the main website for this project.
-			ProjectUri = 'https://github.com/dm3ll3n/AnyBox'
+			ProjectUri = 'https://www.donaldmellenbruch.com/project/anybox'
 
 			# A URL to an icon representing this module.
 			# IconUri = ''
 
 			# ReleaseNotes of this module
-			ReleaseNotes = 'https://www.donaldmellenbruch.com/post/introducing-the-anybox'
+			ReleaseNotes = 'https://www.donaldmellenbruch.com/project/anybox'
 		} # End of PSData hashtable
 	} # End of PrivateData hashtable
 

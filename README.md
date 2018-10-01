@@ -1,7 +1,7 @@
 
-# [Introducing the AnyBox](https://www.donaldmellenbruch.com/post/introducing-the-anybox/)
+# Documentation: [https://www.donaldmellenbruch.com/project/anybox](https://www.donaldmellenbruch.com/project/anybox)
 
-# [New in v0.3.0](https://www.donaldmellenbruch.com/post/anybox-v0.3/)
+*Updated for v0.3.3*
 
 # Changelog
 All notable changes to this project will be documented in this file.
@@ -9,14 +9,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v0.3.1] - 2018-08-05
+## v0.3.3 - 2018-09-25
+
+### Removed
+
+- Removed all default buttons presented along with `GridData`; these buttons can be recreated by providing either "SaveGrid" or "ExploreGrid" to the new `-Template` parameter `New-AnyBoxButton`.
+- Removed `-ShowCopyButton` from `Show-AnyBox`, as it is now done like so: `$b = New-AnyBox -Template CopyMessage; Show-AnyBox -Message 'CopyMe' -Buttons $b`.
+
+### Changed
+
+- Fixed bug in `DefaultValue` when used with `ValidateSet` and a combo box (Issue #3).
+- The special function `Test-ValidInput` used to show an error, if applicable, then return `$true` or `$false`. Now, `Test-ValidInput` will *only* return an object with properties `Is_Valid` and `Message`. `Is_Valid` contains `$true` or `$false`, while `Message` contains a friendly message to show the user. Now, developers can handle invalid input differently if desired.
+- Renamed `-HideGridSearch` parameter to `-NoGridSearch` for consistency, but it is aliased to the old name for compatibility.
+- Added 'Save' button to *Process Killer* example.
+- The helper function `ConvertTo-Base64` has been renamed to `Get-Base64` (#7, thanks Tonic8).
+
+### Added
+
+- Added `-ToolTip` parameter to `New-AnyBoxButton`.
+- Added `FolderOpen` input type to `New-AnyBoxPrompt`; Inspired by @kalivodv.
+- Added `-Collapsed` parameter to `New-AnyBoxPrompt`.
+- Added `-CollapsedGroups` parameter to `Show-AnyBox`.
+
+## v0.3.2 - 2018-09-04
+
+### Changed
+
+- Module restructuring; huge thanks to @Chirishman! Hopefully this helps with #7.
+
+## v0.3.1 - 2018-08-05
 
 ### Changed
 
 - Minor bugfixes (see [issue 2](https://github.com/dm3ll3n/AnyBox/issues/2))
 - Corrections to examples.
 
-## [v0.3.0](https://www.donaldmellenbruch.com/post/anybox-v0.3/) - 2018-03-04
+## v0.3.0 - 2018-03-04
 
 ### Added
 

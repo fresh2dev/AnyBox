@@ -6,11 +6,10 @@ function Test-ValidInput
 	)
 
 	[bool]$valid = $true
+	[string]$err_msg = $null
 
 	foreach ($prmpt in $Prompts)
 	{
-		[string]$err_msg = $null
-
 		if ($prmpt.ValidateNotEmpty -and -not $Inputs[$prmpt.Name]) {
 				if ($prmpt.ValidateSet) {
 					$err_msg = 'Please make a selection.'

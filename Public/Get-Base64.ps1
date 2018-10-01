@@ -1,4 +1,4 @@
-function ConvertTo-Base64
+function Get-Base64
 {
 	<#
 	.SYNOPSIS

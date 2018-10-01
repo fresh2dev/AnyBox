@@ -1,3 +1,5 @@
+Import-Module "..\AnyBox.psd1"
+
 # Define the computer name prompt; the field must not be empty and the computer must be online.
 $p = @(New-Prompt -Group 0 -Name 'pcName' -Message 'Computer Name:' -MessagePosition 'Left' -DefaultValue 'Localhost' `
                   -ValidateNotEmpty -ValidateScript { Test-Connection $_ -Count 1 -Quiet -ea 0})
@@ -44,6 +46,8 @@ $b = @(New-Button -Text 'Refresh' -IsDefault -OnClick {
     if ($msg) { Show-AnyBox @childWinParams -Message $msg -Buttons 'OK' }
   }
 })
+
+$b += New-AnyBoxButton -Template 'SaveGrid'
 
 $b += @(New-Button -Text 'Kill' -OnClick {
   # Run 'Test-ValidateInput' to enforce

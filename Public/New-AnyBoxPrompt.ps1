@@ -23,7 +23,8 @@ function New-AnyBoxPrompt {
         [string]$RadioGroup,
         [System.Management.Automation.ScriptBlock]$ValidateScript,
         [switch]$ShowSeparator,
-        [switch]$Collapsible
+        [switch]$Collapsible,
+        [switch]$Collapsed
     )
 
     if ($Name -and $Name -notmatch '^[A-Za-z_]+[A-Za-z0-9_]*$') {
@@ -85,6 +86,7 @@ function New-AnyBoxPrompt {
     $p.ValidateScript = $ValidateScript
     $p.ShowSeparator = $ShowSeparator -as [bool]
     $p.Collapsible = $Collapsible -as [bool]
+    $p.Collapsed = $Collapsed -as [bool]
 
     return($p)
 }

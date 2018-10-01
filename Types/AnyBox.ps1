@@ -29,6 +29,7 @@ namespace AnyBox {
 		public System.Management.Automation.ScriptBlock ValidateScript;
 		public bool ShowSeparator = false;
 		public bool Collapsible = false;
+		public bool Collapsed = false;
 	}
 
 	public class Button
