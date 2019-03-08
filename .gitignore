@@ -4,3 +4,4 @@ thumbs.db
 *.pssproj
 *.sln
 .DS_Store
+.Rhistory

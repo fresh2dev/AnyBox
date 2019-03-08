@@ -3,7 +3,7 @@
 	ModuleToProcess = 'AnyBox.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '0.3.3'
+	ModuleVersion = '0.3.4'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = 'Desktop'
@@ -18,7 +18,7 @@
 	# CompanyName = 'Unknown'
 
 	# Copyright statement for this module
-	Copyright = '(c) 2018 Donald Mellenbruch. All rights reserved.'
+	Copyright = '(c) 2019 Donald Mellenbruch. All rights reserved.'
 
 	# Description of the functionality provided by this module
 	Description = 'Designed to facilitate script input/output with an easily customizable WPF window.'
