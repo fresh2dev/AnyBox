@@ -1,16 +1,28 @@
 Import-Module "..\AnyBox.psd1"
 
+$anybox = New-Object AnyBox.AnyBox
+
+$anybox.Title = 'Process Killer'
+$anybox.ResizeMode = 'CanResizeWithGrip'
+$anybox.MaxHeight = 800
+$anybox.MaxWidth = 600
+$anybox.Topmost = $true
+$anybox.AccentColor = 'Black'
+
+$anybox.GridData = @(Get-WmiObject -Class Win32_Process -ea Stop | select ProcessId, ProcessName, CommandLine)
+$anybox.NoGridSearch = $true
+$anybox.SelectionMode = [AnyBox.DataGridSelectionMode]::MultiRow
+
 # Define the computer name prompt; the field must not be empty and the computer must be online.
-$p = @(New-Prompt -Group 0 -Name 'pcName' -Message 'Computer Name:' -MessagePosition 'Left' -DefaultValue 'Localhost' `
+$anybox.Prompts = @(New-AnyBoxPrompt -Group 0 -Name 'pcName' -Message 'Computer Name:' -MessagePosition 'Left' -DefaultValue 'Localhost' `
                   -ValidateNotEmpty -ValidateScript { Test-Connection $_ -Count 1 -Quiet -ea 0})
 
 # Define the process filter prompt
-$p += @(New-Prompt -Group 0 -Name 'pFilter' -Message '    Process Name:' -MessagePosition 'Left' -DefaultValue '*' `
+$anybox.Prompts += @(New-AnyBoxPrompt -Group 0 -Name 'pFilter' -Message '    Process Name:' -MessagePosition 'Left' -DefaultValue '*' `
                     -ValidateNotEmpty)
 
 # Define the 'Refresh' button.
-$b = @(New-Button -Text 'Refresh' -IsDefault -OnClick {
-
+$anybox.Buttons = New-AnyBoxButton -Text 'Refresh' -IsDefault -OnClick {
   # Run 'Test-ValidateInput' to enforce
   # the validation parameters set on the 'pcName' prompt.
   $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
@@ -45,11 +57,11 @@ $b = @(New-Button -Text 'Refresh' -IsDefault -OnClick {
     # Show a child window with @childWinParams.
     if ($msg) { Show-AnyBox @childWinParams -Message $msg -Buttons 'OK' }
   }
-})
+}
 
-$b += New-AnyBoxButton -Template 'SaveGrid'
+$anybox.Buttons += New-AnyBoxButton -Template 'SaveGrid'
 
-$b += @(New-Button -Text 'Kill' -OnClick {
+$anybox.Buttons += New-AnyBoxButton -Text 'Kill' -OnClick {
   # Run 'Test-ValidateInput' to enforce
   # the validation parameters set on the 'pcName' prompt.
   $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
@@ -116,10 +128,6 @@ $b += @(New-Button -Text 'Kill' -OnClick {
       }
     }
   }
-})
+}
 
-$grid_data = @(Get-WmiObject -Class Win32_Process -ea Stop | select ProcessId, ProcessName, CommandLine)
-
-Show-AnyBox -ResizeMode 'CanResizeWithGrip' -Title 'Process Killer' -MaxHeight 1000 -MaxWidth 1200 -Topmost `
-  -AccentColor 'Black' -Buttons $b -Prompts $p -GridData $grid_data -HideGridSearch -SelectionMode 'MultiRow' |
-    Out-Null
+$anybox | Show-AnyBox | Out-Null

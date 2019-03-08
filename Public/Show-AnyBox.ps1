@@ -77,66 +77,104 @@ function Show-AnyBox
 	.OUTPUTS
 		A hashtable of key-value pairs containing what input was received (e.g., text input, button clicked).
 	#>
-	[cmdletbinding()]
+	[cmdletbinding(DefaultParameterSetName='obj')]
 	param(
-		[ValidateSet($null, 'Information', 'Warning', 'Error', 'Question')]
+		[Parameter(ParameterSetName='obj', ValueFromPipeline=$true)]
+		[AnyBox.AnyBox]$AnyBox,
+		[Parameter(ParameterSetName='create')]
 		[string]$Icon,
+		[Parameter(ParameterSetName='create')]
 		[string]$Title,
+		[Parameter(ParameterSetName='create')]
 		[string]$Image,
+		[Parameter(ParameterSetName='create')]
 		[string[]]$Message,
+		[Parameter(ParameterSetName='create')]
 		[Alias('Prompt')]
 		[object[]]$Prompts,
+		[Parameter(ParameterSetName='create')]
 		[object[]]$Buttons,
+		[Parameter(ParameterSetName='create')]
 		[string]$CancelButton,
+		[Parameter(ParameterSetName='create')]
 		[string]$DefaultButton,
+		[Parameter(ParameterSetName='create')]
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$ButtonRows = 1,
+		[Parameter(ParameterSetName='create')]
 		[string[]]$Comment,
+		[Parameter(ParameterSetName='create')]
 		[ValidateSet('Left', 'Center')]
 		[string]$ContentAlignment = 'Left',
+		[Parameter(ParameterSetName='create')]
 		[switch]$CollapsibleGroups,
+		[Parameter(ParameterSetName='create')]
 		[switch]$CollapsedGroups,
+		[Parameter(ParameterSetName='create')]
 		[scriptblock]$PrepScript,
 
+		[Parameter(ParameterSetName='create')]
 		[ValidateNotNullOrEmpty()]
-		[string]$FontFamily = 'Segoe UI',
+		[System.Windows.Media.FontFamily]$FontFamily = 'Segoe UI',
+		[Parameter(ParameterSetName='create')]
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$FontSize = 12,
+		[Parameter(ParameterSetName='create')]
 		[ValidateNotNullOrEmpty()]
-		[string]$FontColor = 'Black',
-		[string]$BackgroundColor,
-		[string]$AccentColor = 'Gainsboro',
-		[ValidateSet('None', 'SingleBorderWindow', 'ThreeDBorderWindow', 'ToolWindow')]
+		[System.Windows.Media.Brush]$FontColor = 'Black',
+		[Parameter(ParameterSetName='create')]
+		[System.Windows.Media.Brush]$BackgroundColor,
+		[Parameter(ParameterSetName='create')]
+		[System.Windows.Media.Brush]$AccentColor = 'Gainsboro',
+		[Parameter(ParameterSetName='create')]
 		[System.Windows.WindowStyle]$WindowStyle = 'SingleBorderWindow',
-		[ValidateSet('NoResize', 'CanMinimize', 'CanResize', 'CanResizeWithGrip')]
+		[Parameter(ParameterSetName='create')]
 		[System.Windows.ResizeMode]$ResizeMode = 'CanMinimize',
+		[Parameter(ParameterSetName='create')]
 		[switch]$NoResize,
+		[Parameter(ParameterSetName='create')]
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$MinHeight = 50,
+		[Parameter(ParameterSetName='create')]
 		[ValidateScript({$_ -gt 0})]
 		[uint16]$MinWidth = 50,
+		[Parameter(ParameterSetName='create')]
 		[uint16]$MaxHeight = 0,
+		[Parameter(ParameterSetName='create')]
 		[uint16]$MaxWidth = 0,
+		[Parameter(ParameterSetName='create')]
 		[switch]$Topmost,
+		[Parameter(ParameterSetName='create')]
 		[switch]$HideTaskbarIcon,
+		[Parameter(ParameterSetName='create')]
 		[uint32]$Timeout,
+		[Parameter(ParameterSetName='create')]
 		[switch]$Countdown,
+		[Parameter(ParameterSetName='create')]
 		[System.Windows.Window]$ParentWindow = $null,
-
-		[array]$GridData,
+		[Parameter(ParameterSetName='create')]
+		[object[]]$GridData,
+		[Parameter(ParameterSetName='create')]
 		[switch]$GridAsList,
-		[ValidateSet('None', 'SingleCell', 'SingleRow', 'MultiRow')]
-		[string]$SelectionMode = 'SingleCell',
+		[Parameter(ParameterSetName='create')]
+		[AnyBox.DataGridSelectionMode]$SelectionMode = 'SingleCell',
+		[Parameter(ParameterSetName='create')]
 		[Alias('HideGridSearch')]
 		[switch]$NoGridSearch
 	)
+
+	if ($AnyBox) {
+		$AnyBox.psobject.properties | ForEach-Object {
+			Set-Variable -Name $_.Name -Value $_.Value -Force
+		}
+	}
 
 	if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
 		# No minimize button
 		$ResizeMode = 'NoResize'
 	}
 
-	$form = @{'Result'=@{}} # [hashtable]::Synchronized(@{ 'Result' = @{})
+	$form = @{'Result'=@{}}
 
 	[xml]$xaml = @"
 <Window
@@ -150,7 +188,7 @@ function Show-AnyBox
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
-				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
@@ -282,7 +320,7 @@ function Show-AnyBox
 	}
 
 	$tab_panel = $null
-	if ($Prompts | where { $_.Tab }) {
+	if ($Prompts | Where-Object { $_.Tab }) {
 		$tab_panel = New-Object System.Windows.Controls.TabControl
 		$tab_panel.HorizontalAlignment = 'Stretch'
 		$tab_panel.VerticalAlignment = 'Stretch'
@@ -292,7 +330,7 @@ function Show-AnyBox
 		$form.Add('Tabs', $tab_panel)
 	}
 
-	$Prompts | Group-Object -Property 'Tab' | sort Name | foreach {
+	$Prompts | Group-Object -Property 'Tab' | Sort-Object Name | ForEach-Object {
 		$tabName = $_.Values[0]
 
 		$tab_stack = $null
@@ -304,7 +342,7 @@ function Show-AnyBox
 			$tab_stack.Margin = '5, 0, 5, 0'
 		}
 
-		$_.Group | Group-Object -Property 'Group' | sort Name | foreach {
+		$_.Group | Group-Object -Property 'Group' | Sort-Object Name | ForEach-Object {
 
 			$groupName = $_.Values[0]
 
@@ -368,12 +406,12 @@ function Show-AnyBox
 						$inBox.VerticalAlignment = 'Center'
 						$inBox.VerticalContentAlignment = 'Center'
 
-						$prmpt.ValidateSet | foreach {
+						$prmpt.ValidateSet | ForEach-Object {
 							$null = $inBox.Items.Add((New-TextBlock -RefForm ([ref]$form) -Text $_ -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor 'Black' -Margin 0 -ContentAlignment $prmpt.Alignment))
 						}
 
 						if ($prmpt.DefaultValue) {
-							$inBox.SelectedItem = $inBox.Items | where { $_.Text -eq $prmpt.DefaultValue } | select -First 1
+							$inBox.SelectedItem = $inBox.Items | Where-Object { $_.Text -eq $prmpt.DefaultValue } | Select-Object -First 1
 						}
 
 						$inBox.add_SelectionChanged({
@@ -388,7 +426,7 @@ function Show-AnyBox
 							$inBox.Orientation = 'Horizontal'
 						}
 
-						$prmpt.ValidateSet | foreach {
+						$prmpt.ValidateSet | ForEach-Object {
 							$r = New-Object System.Windows.Controls.RadioButton
 							if ($prmpt.RadioGroup) {
 								$r.GroupName = $prmpt.RadioGroup
@@ -942,7 +980,7 @@ function Show-AnyBox
 			}
 		}
 
-		$Buttons | where { $_ -is [string] -or -not $_.OnClick } | ForEach-Object {
+		$Buttons | Where-Object { $_ -is [string] -or -not $_.OnClick } | ForEach-Object {
 			if ($_ -is [AnyBox.Button]) {
 				if ($_.Name) {
 					$form.Result.Add($_.Name, $false)
@@ -960,7 +998,7 @@ function Show-AnyBox
 
 		[uint16]$c = 0
 
-		1..$ButtonRows | foreach {
+		1..$ButtonRows | ForEach-Object {
 			# Create a horizontal stack-panel for buttons and populate it.
 			$btnStack = New-Object System.Windows.Controls.StackPanel
 			$btnStack.Orientation = 'Horizontal'
@@ -1073,7 +1111,7 @@ $form.Result | Foreach-Object -Process {{
 		}
 
 		if ($PrepScript) {
-			$null = $form | foreach -Process $PrepScript
+			$null = $form | ForEach-Object -Process $PrepScript
 		}
 
 		if ($GridData) {
