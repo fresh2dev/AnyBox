@@ -591,6 +591,17 @@ function Show-AnyBox
 						$fileBtn.ToolTip = 'Browse'
 						$fileBtn.Content = '...'
 
+						[string]$init_dir = $null
+
+						if ($prmpt.DefaultValue) {
+							if (Test-Path $prmpt.DefaultValue -PathType Leaf) {
+								$init_dir = Split-Path $prmpt.DefaultValue -Parent
+							}
+							elseif (Test-Path $prmpt.DefaultValue -PathType Parent) {
+								$init_dir = $prmpt.DefaultValue
+							}
+						}
+
 						if ($prmpt.InputType -eq [AnyBox.InputType]::FileOpen)
 						{
 							$fileBtn.add_Click({
@@ -598,6 +609,11 @@ function Show-AnyBox
 								$opnWin = New-Object Microsoft.Win32.OpenFileDialog
 								$opnWin.Title = 'Open File'
 								$opnWin.CheckFileExists = $true
+								
+								if ($init_dir) {
+									$opnWin.InitialDirectory = $init_dir
+								}
+
 								if ($opnWin.ShowDialog()) {
 									if (-not (Test-Path $opnWin.FileName)) {
 										Show-AnyBox @childWinParams -Message 'File not found.' -Buttons 'OK' -DefaultButton 'OK'
@@ -615,6 +631,11 @@ function Show-AnyBox
 								$savWin = New-Object Microsoft.Win32.SaveFileDialog
 								$savWin.Title = 'Save File'
 								$savWin.OverwritePrompt = $false
+
+								if ($init_dir) {
+									$savWin.InitialDirectory = $init_dir
+								}
+
 								if ($savWin.ShowDialog() -and $savWin.FileName) {
 									$form[$inBoxName].Text = $savWin.FileName
 								}
@@ -626,6 +647,11 @@ function Show-AnyBox
 								$opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
 								$opnWin.Description = 'Select Folder'
 								$opnWin.ShowNewFolderButton = $true
+
+								if ($init_dir) {
+									$opnWin.SelectedPath = $init_dir
+								}
+
 								if ($opnWin.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
 									if (-not (Test-Path $opnWin.SelectedPath)) {
 										Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons 'OK' -DefaultButton 'OK'
