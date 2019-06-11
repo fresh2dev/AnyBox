@@ -956,17 +956,29 @@ function Show-AnyBox
 		}
 	}
 
+	if ($ProgressBar) {
+		$pb = New-Object System.Windows.Controls.ProgressBar
+		$pb.Name = 'progress_bar'
+		$pb.IsIndeterminate = $true
+		$pb.MinHeight = 25;
+		$pb.HorizontalAlignment = 'Stretch'
+		$pb.VerticalAlignment = 'Center'
+		$pb.Margin = "0, 10, 0, 0"
+		$form.Add('progress_bar', $pb)
+		$form.lowStack.AddChild($pb)
+	}
+
 	# Add comment textblocks.
 	if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
 		$txtMsg.FontStyle = 'Italic'
 		$txtMsg.FontWeight = 'Normal'
-		$form.highStack.AddChild($txtMsg)
+		$form.lowStack.AddChild($txtMsg)
 	}
 
 	if ($Timeout -and $Timeout -gt 0 -and $Countdown) {
 		# Create countdown textblock.
 		$txtTime = New-TextBlock -RefForm ([ref]$form) -Text '---' -Name 'txt_Countdown' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
-		$form.highStack.AddChild($txtTime)
+		$form.lowStack.AddChild($txtTime)
 	}
 
 	if ($Buttons.Count -gt 0)
