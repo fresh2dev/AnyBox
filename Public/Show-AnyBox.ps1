@@ -151,6 +151,10 @@ function Show-AnyBox
 		[Parameter(ParameterSetName='create')]
 		[switch]$Countdown,
 		[Parameter(ParameterSetName='create')]
+		[switch]$ProgressBar,
+		[Parameter(ParameterSetName='create')]
+		[scriptblock]$While,
+		[Parameter(ParameterSetName='create')]
 		[System.Windows.Window]$ParentWindow = $null,
 		[Parameter(ParameterSetName='create')]
 		[object[]]$GridData,
@@ -174,7 +178,7 @@ function Show-AnyBox
 		$ResizeMode = 'NoResize'
 	}
 
-	$form = @{'Result'=@{}}
+	$form = @{'Result'=[hashtable]::Synchronized(@{})}
 
 	[xml]$xaml = @"
 <Window
@@ -1159,19 +1163,39 @@ $form.Result | Foreach-Object -Process {{
 	})
 
 	$form.Window.add_ContentRendered({
-		if ($Timeout -and $Timeout -gt 0)
+		if ($While)
 		{
-			$form.Result.Add('TimedOut', $false)
+			$_whilejob = Start-ThreadJob -ArgumentList $form,$While -ScriptBlock {
+				param([hashtable]$form, [scriptblock]$While)
 
+				while (-not $form['IsClosed'] -and (& $While))
+				{
+					Start-Sleep -Seconds 1
+				}
+
+				if (-not $form['IsClosed']) {
+					$form.Window.Dispatcher.Invoke(
+						[action]{$form.Window.Close()},
+						"Normal"
+					)
+				}
+			}
+
+			$form.Add('job', $_whilejob)
+		}
+
+		if ($Timeout)
+		{
 			$timer = New-Object System.Windows.Threading.DispatcherTimer
 			$timer.Interval = [timespan]::FromSeconds(1.0)
-			[datetime]$script:end_at = [datetime]::Now.AddSeconds($Timeout)
+			[datetime]$script:end_at = [datetime]::Now.AddSeconds($Timeout+1)
 
 			$timer.Add_Tick({
-				if ([datetime]::Now -lt $script:end_at) {
-					if ($Countdown) { $form.txt_Countdown.Text = $script:end_at.Subtract([datetime]::now).ToString('hh\:mm\:ss') }
-				}
-				else {
+				[timespan]$remaining = $script:end_at.Subtract([datetime]::now)
+				if ($Countdown) { $form.txt_Countdown.Text = $remaining.ToString('hh\:mm\:ss') }
+				
+				if ($remaining.TotalSeconds -le 0) {
+					$form.Timer.Stop()
 					$form.Result.TimedOut = $true
 					$form.Window.Close()
 				}
@@ -1181,6 +1205,25 @@ $form.Result | Foreach-Object -Process {{
 
 			$timer.Start()
 		}
+
+		# if ($While) {
+		# 	Write-Verbose $(& $While)
+		# 	$timer2 = New-Object System.Windows.Threading.DispatcherTimer
+		# 	$timer2.Interval = [timespan]::FromSeconds(1.0)
+		# 	$script:whilescript = $While
+
+		# 	$timer2.Add_Tick({
+		# 		$form.txt_Countdown.Text = $continue.ToString()
+		# 		if (-not $continue) {
+		# 			$form.WhileTicker.Stop()
+		# 			$form.Window.Close()
+		# 		}
+		# 	})
+
+		# 	$form.Add('WhileTicker', $timer2)
+
+		# 	$timer2.Start()
+		# }
 
 		# $form.Window.MinHeight = $form.Window.ActualHeight
 		# $form.Window.MinWidth = $form.Window.ActualWidth
@@ -1194,6 +1237,8 @@ $form.Result | Foreach-Object -Process {{
 			$form['Timer'] = $null
 		}
 
+		$form['IsClosed'] = $true
+
 		if ($form.Window.Owner) {
 			$form.Window.Owner.Opacity = 1.0
 			$form.Window.Owner.Activate()
@@ -1201,6 +1246,10 @@ $form.Result | Foreach-Object -Process {{
 	})
 
 	$null = $form.Window.ShowDialog()
+
+	if ($form['job']) {
+		$null = $form['job'] | Receive-Job -Wait -AutoRemoveJob -ErrorAction Stop
+	}
 
 	$form.Result
 
