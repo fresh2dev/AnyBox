@@ -594,7 +594,7 @@ function Show-AnyBox
 							if (Test-Path $prmpt.DefaultValue -PathType Leaf) {
 								$init_dir = Split-Path $prmpt.DefaultValue -Parent
 							}
-							elseif (Test-Path $prmpt.DefaultValue -PathType Parent) {
+							elseif (Test-Path $prmpt.DefaultValue -PathType Container) {
 								$init_dir = $prmpt.DefaultValue
 							}
 						}
