@@ -12,7 +12,7 @@ function Show-AnyBox
 	.PARAMETER Title
 		The window title.
 	.PARAMETER Image
-		The path to an image file, or a base64 string representation of an image. See 'ConvertTo-Base64'.
+		The path to an image file, or a base64 string representation of an image. See 'Get-Base64'.
 	.PARAMETER Message
 		One or more messages to display in the window.
 	.PARAMETER Prompts
@@ -270,7 +270,7 @@ function Show-AnyBox
 
 		if ($Image.Length -gt 260 -and $Image.Length % 4 -eq 0) {
 			# 260 is max path-length and base64 is a multiple of 4.
-			$img.Source = $bmp | ConvertTo-BitmapImage
+			$img.Source = $Image | ConvertTo-BitmapImage
 		}
 		elseif (Test-Path $Image) {
 			$img.Source = $Image

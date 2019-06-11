@@ -11,7 +11,7 @@ function Get-Base64
 	.PARAMETER ImagePath
 		Specifies a path to one or more locations.
 	.EXAMPLE
-		[string]$base64 = 'C:\Path\to\img.png' | ConvertTo-Base64
+		[string]$base64 = 'C:\Path\to\img.png' | Get-Base64
 		Show-AnyBox -Image $base64 -Message 'Hello World'
 	.INPUTS
 		The path to an image file.
