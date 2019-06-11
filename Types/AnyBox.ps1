@@ -13,6 +13,8 @@ namespace AnyBox
 	public enum SetPresentation { ComboBox, Radio, Radio_Wide };
 	public enum DataGridSelectionMode { None, SingleCell, SingleRow, MultiRow };
 
+	public enum WindowStartupLocation { Center, Top, TopLeft, TopRight, Bottom, BottomLeft, BottomRight };
+
 	public class AnyBox
 	{
 		public string Icon;
@@ -45,6 +47,9 @@ namespace AnyBox
 		public bool HideTaskbarIcon;
 		public System.UInt32 Timeout;
 		public bool Countdown;
+		public bool ProgressBar;
+		public System.Management.Automation.ScriptBlock While;
+		public WindowStartupLocation WindowStartupLocation = WindowStartupLocation.Center;
 		public System.Windows.Window ParentWindow;
 		public object[] GridData;
 		public bool GridAsList;

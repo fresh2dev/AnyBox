@@ -112,7 +112,6 @@ function Show-AnyBox
 		[switch]$CollapsedGroups,
 		[Parameter(ParameterSetName='create')]
 		[scriptblock]$PrepScript,
-
 		[Parameter(ParameterSetName='create')]
 		[ValidateNotNullOrEmpty()]
 		[System.Windows.Media.FontFamily]$FontFamily = 'Segoe UI',
@@ -154,6 +153,8 @@ function Show-AnyBox
 		[switch]$ProgressBar,
 		[Parameter(ParameterSetName='create')]
 		[scriptblock]$While,
+		[Parameter(ParameterSetName='create')]
+		[AnyBox.WindowStartupLocation]$WindowStartupLocation = 'Center',
 		[Parameter(ParameterSetName='create')]
 		[System.Windows.Window]$ParentWindow = $null,
 		[Parameter(ParameterSetName='create')]
@@ -259,10 +260,6 @@ function Show-AnyBox
 		$form.Window.Owner = $ParentWindow
 		$form.Window.WindowStartupLocation = 'CenterOwner'
 		$form.Window.Topmost = $false
-	}
-	else {
-		$form.Window.Owner = $null
-		$form.Window.WindowStartupLocation = 'CenterScreen'
 	}
 
 	if ($Image) {
@@ -1195,6 +1192,45 @@ $form.Result | Foreach-Object -Process {{
 				$form[$Prompts[0].Name].SelectAll()
 			}
 		}
+
+		if ($WindowStartupLocation -ne [AnyBox.WindowStartupLocation]::Center)
+		{
+			$form.Window.WindowStartupLocation = 'Manual'
+
+			switch ($WindowStartupLocation)
+			{
+				([AnyBox.WindowStartupLocation]::Top) {
+					$form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
+					$form.Window.Top = 0
+					break
+				}
+				([AnyBox.WindowStartupLocation]::TopLeft) {
+					$form.Window.Left = 0
+					$form.Window.Top = 0
+					break
+				}
+				([AnyBox.WindowStartupLocation]::TopRight) {
+					$form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
+					$form.Window.Top = 0
+					break
+				}
+				([AnyBox.WindowStartupLocation]::Bottom) {
+					$form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
+					$form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+					break
+				}
+				([AnyBox.WindowStartupLocation]::BottomLeft) {
+					$form.Window.Left = 0
+					$form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+					break
+				}
+				([AnyBox.WindowStartupLocation]::BottomRight) {
+					$form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
+					$form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+					break
+				}
+			}
+		}
 	})
 
 	$form.Window.add_ContentRendered({
@@ -1240,28 +1276,6 @@ $form.Result | Foreach-Object -Process {{
 
 			$timer.Start()
 		}
-
-		# if ($While) {
-		# 	Write-Verbose $(& $While)
-		# 	$timer2 = New-Object System.Windows.Threading.DispatcherTimer
-		# 	$timer2.Interval = [timespan]::FromSeconds(1.0)
-		# 	$script:whilescript = $While
-
-		# 	$timer2.Add_Tick({
-		# 		$form.txt_Countdown.Text = $continue.ToString()
-		# 		if (-not $continue) {
-		# 			$form.WhileTicker.Stop()
-		# 			$form.Window.Close()
-		# 		}
-		# 	})
-
-		# 	$form.Add('WhileTicker', $timer2)
-
-		# 	$timer2.Start()
-		# }
-
-		# $form.Window.MinHeight = $form.Window.ActualHeight
-		# $form.Window.MinWidth = $form.Window.ActualWidth
 
 		$form.Window.Activate()
 	})
