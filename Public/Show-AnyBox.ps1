@@ -825,30 +825,39 @@ function Show-AnyBox
 		$dataGrid.GridLinesVisibility = 'All'
 		$dataGrid.FontSize = 12
 
-		$form['data_grid'].add_SelectionChanged({
-			if ($form['data_grid'].SelectedCells.Count -gt 0 -or $form['data_grid'].SelectedItems.Count -gt 0)
-			{
+		if ($SelectionMode -eq 'SingleCell')
+		{
+			$form['data_grid'].add_SelectedCellsChanged({
 				$selection = $null
 
-				switch ($SelectionMode)
+				if ($form['data_grid'].SelectedCells.Count -gt 0) {
+					[psobject]$selection = @($form['data_grid'].SelectedCells | ForEach-Object { ([System.Windows.Controls.TextBlock]$_.Column.GetCellContent($_.Item)).Text })[0]
+				}
+				
+				$form.Result['grid_select'] = $selection
+			})
+		}
+		else
+		{
+			$form['data_grid'].add_SelectionChanged({			
+				$selection = $null
+
+				if ($form['data_grid'].SelectedItems.Count -gt 0)
 				{
-					'SingleCell' {
-						[string]$selection = $form['data_grid'].SelectedCells[0].Item.ToString()
-					}
-					'SingleRow' {
-						[psobject]$selection = $form['data_grid'].SelectedItem
-					}
-					'MultiRow' {
-						[psobject[]]$selection = @($form['data_grid'].SelectedItems)
+					switch ($SelectionMode)
+					{
+						'SingleRow' {
+							[psobject]$selection = $form['data_grid'].SelectedItem
+						}
+						'MultiRow' {
+							[psobject[]]$selection = @($form['data_grid'].SelectedItems)
+						}
 					}
 				}
-
+				
 				$form.Result['grid_select'] = $selection
-			}
-			else {
-				$form.Result['grid_select'] = $null
-			}
-		})
+			})
+		}
 
 		if (-not $NoGridSearch)
 		{
