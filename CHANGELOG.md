@@ -1,8 +1,19 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## v0.4.0 - 2019-06-11
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+### Added
+
+- Added ability to show indeterminant progress bar with switch parameter `-ProgressBar`.
+- Added ability to show window only while a condition is `$true` with scriptblock parameter `-While`.
+    - Requires the `ThreadJob` module.
+- Added `-WindowStartupLocation` parameter to open window in a predefined location.
+- When a path is provided as the default value for prompts of type `FileOpen`, `FileSave`, or `FolderOpen`, the dialog opens to the parent directory of the provided path.
+
+### Fixed
+
+- Fixed ability to display a base64-encoded image passed to the `-Image` parameter.
+- Fixed selection return when `-SelectionMode` is `SingleCell`.
 
 ## v0.3.4 - 2019-03-08
 

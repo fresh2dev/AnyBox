@@ -63,7 +63,7 @@ function New-AnyBoxPrompt {
             }
         }
     }
-	
+    
     $p = New-Object AnyBox.Prompt
 
     $p.Name = $Name

@@ -1,16 +1,16 @@
 function ConvertTo-BitmapImage {
     <#
-	.SYNOPSIS
-		Converts a base64 string to a BitmapImage object.
-	.DESCRIPTION
-		Used by 'Show-AnyBox' to convert a base64 string into a [System.Windows.Media.Imaging.BitmapImage].
-	.PARAMETER base64
-		The base64 string representing an image.
-	.INPUTS
-		The base64 string representing an image.
-	.OUTPUTS
-		A [System.Windows.Media.Imaging.BitmapImage] object.
-	#>
+    .SYNOPSIS
+        Converts a base64 string to a BitmapImage object.
+    .DESCRIPTION
+        Used by 'Show-AnyBox' to convert a base64 string into a [System.Windows.Media.Imaging.BitmapImage].
+    .PARAMETER base64
+        The base64 string representing an image.
+    .INPUTS
+        The base64 string representing an image.
+    .OUTPUTS
+        A [System.Windows.Media.Imaging.BitmapImage] object.
+    #>
     param([
         Parameter(ValueFromPipeline = $true)]
         [string[]]$base64
