@@ -11,6 +11,7 @@ Read the release notes on [GitHub](https://github.com/dm3ll3n/AnyBox) or [my sit
     - [Buttons](#buttons)
     - [Data Grid](#data-grid)
     - [Handling Input](#handling-input)
+- [New in v0.4.0](#new-in-v040)
 - [More resources](#more-resources)
 
 ## Overview
@@ -345,7 +346,7 @@ else {
 
 Three new parameters were introduced in v0.4.0:
 
-- `-ProgressBar`: show an indeterminant progress bar.
+- `-ProgressBar`: show an indeterminate progress bar.
 - `-While`: only show the window while the provided scriptblock evaluates to `$true`.
 - `-WindowStartupLocation`: specify the startup location for the AnyBox.
 

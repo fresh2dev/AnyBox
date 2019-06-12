@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added ability to show indeterminant progress bar with switch parameter `-ProgressBar`.
+- Added ability to show indeterminate progress bar with switch parameter `-ProgressBar`.
 - Added ability to show window only while a condition is `$true` with scriptblock parameter `-While`.
     - Requires the `ThreadJob` module.
 - Added `-WindowStartupLocation` parameter to open window in a predefined location.
