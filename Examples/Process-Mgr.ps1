@@ -2,7 +2,7 @@ Import-Module "..\AnyBox.psd1"
 
 $anybox = New-Object AnyBox.AnyBox
 
-$anybox.Title = 'Process Killer'
+$anybox.Title = 'Process Mgr'
 $anybox.ResizeMode = 'CanResizeWithGrip'
 $anybox.MaxHeight = 800
 $anybox.MaxWidth = 600
