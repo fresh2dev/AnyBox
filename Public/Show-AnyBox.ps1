@@ -82,17 +82,21 @@ function Show-AnyBox
         [Parameter(ParameterSetName='obj', ValueFromPipeline=$true)]
         [AnyBox.AnyBox]$AnyBox,
         [Parameter(ParameterSetName='create')]
+        [Alias('i')]
         [string]$Icon,
         [Parameter(ParameterSetName='create')]
+        [Alias('t')]
         [string]$Title,
         [Parameter(ParameterSetName='create')]
         [string]$Image,
         [Parameter(ParameterSetName='create')]
+        [Alias('m', 'Msg')]
         [string[]]$Message,
         [Parameter(ParameterSetName='create')]
-        [Alias('Prompt')]
+        [Alias('p', 'Prompt')]
         [object[]]$Prompts,
         [Parameter(ParameterSetName='create')]
+        [Alias('b', 'Btn', 'Button')]
         [object[]]$Buttons,
         [Parameter(ParameterSetName='create')]
         [string]$CancelButton,
@@ -1304,3 +1308,5 @@ $form.Result | Foreach-Object -Process {{
 
     $form = $null
 }
+
+Set-Alias -Name 'anybox' -Value 'Show-AnyBox' -Description 'Show-AnyBox' -Scope 'Global'
