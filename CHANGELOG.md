@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.1 - 2022-05-30
+
+### Added
+
+- compatibility with pwsh v7
+- aliases to support short-form invocation, e.g., `anybox -m 'hey' -b 'ok'`
+
 ## v0.4.0 - 2019-06-11
 
 ### Added
