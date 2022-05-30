@@ -19,14 +19,16 @@ function Get-Base64
         The base64 string representation of the image at $ImagePath.
     #>
     param(
-        [Parameter(ValueFromPipeline=$true)]
+        [Parameter(ValueFromPipeline = $true)]
         [string[]]$ImagePath,
         [ValidateNotNullOrEmpty()]
         [System.Drawing.Imaging.ImageFormat]$ImageFormat = [System.Drawing.Imaging.ImageFormat]::Png
     )
 
-    process {
-        foreach ($img in $ImagePath) {
+    process
+    {
+        foreach ($img in $ImagePath)
+        {
             $bmp = [System.Drawing.Bitmap]::FromFile($img)
 
             $memory = New-Object System.IO.MemoryStream

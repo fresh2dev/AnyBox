@@ -77,113 +77,115 @@ function Show-AnyBox
     .OUTPUTS
         A hashtable of key-value pairs containing what input was received (e.g., text input, button clicked).
     #>
-    [cmdletbinding(DefaultParameterSetName='obj')]
+    [cmdletbinding(DefaultParameterSetName = 'obj')]
     param(
-        [Parameter(ParameterSetName='obj', ValueFromPipeline=$true)]
+        [Parameter(ParameterSetName = 'obj', ValueFromPipeline = $true)]
         [AnyBox.AnyBox]$AnyBox,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('i')]
         [string]$Icon,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('t')]
         [string]$Title,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [string]$Image,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('m', 'Msg')]
         [string[]]$Message,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('p', 'Prompt')]
         [object[]]$Prompts,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('b', 'Btn', 'Button')]
         [object[]]$Buttons,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [string]$CancelButton,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [string]$DefaultButton,
-        [Parameter(ParameterSetName='create')]
-        [ValidateScript({$_ -gt 0})]
+        [Parameter(ParameterSetName = 'create')]
+        [ValidateScript({ $_ -gt 0 })]
         [uint16]$ButtonRows = 1,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [string[]]$Comment,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [ValidateSet('Left', 'Center')]
         [string]$ContentAlignment = 'Left',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$CollapsibleGroups,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$CollapsedGroups,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [scriptblock]$PrepScript,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [ValidateNotNullOrEmpty()]
         [System.Windows.Media.FontFamily]$FontFamily = 'Segoe UI',
-        [Parameter(ParameterSetName='create')]
-        [ValidateScript({$_ -gt 0})]
+        [Parameter(ParameterSetName = 'create')]
+        [ValidateScript({ $_ -gt 0 })]
         [uint16]$FontSize = 12,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [ValidateNotNullOrEmpty()]
         [System.Windows.Media.Brush]$FontColor = 'Black',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [System.Windows.Media.Brush]$BackgroundColor,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [System.Windows.Media.Brush]$AccentColor = 'Gainsboro',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [System.Windows.WindowStyle]$WindowStyle = 'SingleBorderWindow',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [System.Windows.ResizeMode]$ResizeMode = 'CanMinimize',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$NoResize,
-        [Parameter(ParameterSetName='create')]
-        [ValidateScript({$_ -gt 0})]
+        [Parameter(ParameterSetName = 'create')]
+        [ValidateScript({ $_ -gt 0 })]
         [uint16]$MinHeight = 50,
-        [Parameter(ParameterSetName='create')]
-        [ValidateScript({$_ -gt 0})]
+        [Parameter(ParameterSetName = 'create')]
+        [ValidateScript({ $_ -gt 0 })]
         [uint16]$MinWidth = 50,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [uint16]$MaxHeight = 0,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [uint16]$MaxWidth = 0,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$Topmost,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$HideTaskbarIcon,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [uint32]$Timeout,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$Countdown,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$ProgressBar,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [scriptblock]$While,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [AnyBox.WindowStartupLocation]$WindowStartupLocation = 'Center',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [System.Windows.Window]$ParentWindow = $null,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [object[]]$GridData,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [switch]$GridAsList,
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [AnyBox.DataGridSelectionMode]$SelectionMode = 'SingleCell',
-        [Parameter(ParameterSetName='create')]
+        [Parameter(ParameterSetName = 'create')]
         [Alias('HideGridSearch')]
         [switch]$NoGridSearch
     )
 
-    if ($AnyBox) {
+    if ($AnyBox)
+    {
         $AnyBox.psobject.properties | ForEach-Object {
             Set-Variable -Name $_.Name -Value $_.Value -Force
         }
     }
 
-    if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle)) {
+    if ($NoResize -or ($HideTaskbarIcon -and $ResizeMode -ne 'NoResize' -and @('None', 'ToolWindow') -notcontains $WindowStyle))
+    {
         # No minimize button
         $ResizeMode = 'NoResize'
     }
 
-    $form = @{'Result'=[hashtable]::Synchronized(@{})}
+    $form = @{'Result' = [hashtable]::Synchronized(@{}) }
 
     [xml]$xaml = @"
 <Window
@@ -218,30 +220,41 @@ function Show-AnyBox
     $xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
     $xaml = $null
 
-    if ($MaxHeight -ge $MinHeight) {
+    if ($MaxHeight -ge $MinHeight)
+    {
         $form.Window.MaxHeight = $MaxHeight
     }
 
-    if ($MaxWidth -ge $MinWidth) {
+    if ($MaxWidth -ge $MinWidth)
+    {
         $form.Window.MaxWidth = $MaxWidth
     }
 
-    if ($WindowStyle -eq 'None') {
+    if ($WindowStyle -eq 'None')
+    {
         $form.Window.BorderBrush = 'Black'
         $form.Window.BorderThickness = '1'
     }
 
-    if ($Title) { $form.Window.Title = $Title }
-    if ($FontColor) { $form.Window.Foreground = $FontColor }
-    if ($BackgroundColor) {
+    if ($Title)
+    {
+        $form.Window.Title = $Title 
+    }
+    if ($FontColor)
+    {
+        $form.Window.Foreground = $FontColor 
+    }
+    if ($BackgroundColor)
+    {
         $form.Window.Background = $BackgroundColor
     }
 
-    if ($Icon) {
+    if ($Icon)
+    {
         # https://stackoverflow.com/a/2572771
         $form.Window.Icon = [System.Windows.Interop.Imaging]::CreateBitmapSourceFromHIcon(([System.Drawing.SystemIcons]::$Icon).Handle, `
-                                                                [System.Windows.Int32Rect]::Empty, `
-                                                                [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
+                [System.Windows.Int32Rect]::Empty, `
+                [System.Windows.Media.Imaging.BitmapSizeOptions]::FromEmptyOptions())
     }
 
     [hashtable]$childWinParams = @{
@@ -260,32 +273,39 @@ function Show-AnyBox
         ParentWindow = $form.Window
     }
 
-    if ($ParentWindow) {
+    if ($ParentWindow)
+    {
         $form.Window.Owner = $ParentWindow
         $form.Window.WindowStartupLocation = 'CenterOwner'
         $form.Window.Topmost = $false
     }
 
-    if ($Image) {
+    if ($Image)
+    {
         $img = New-Object System.Windows.Controls.Image
 
-        if ($Image.Length -gt 260 -and $Image.Length % 4 -eq 0) {
+        if ($Image.Length -gt 260 -and $Image.Length % 4 -eq 0)
+        {
             # 260 is max path-length and base64 is a multiple of 4.
             $img.Source = $Image | ConvertTo-BitmapImage
         }
-        elseif (Test-Path $Image) {
+        elseif (Test-Path $Image)
+        {
             $img.Source = $Image
         }
-        elseif (Test-Path "$PSScriptRoot\$Image") {
+        elseif (Test-Path "$PSScriptRoot\$Image")
+        {
             $img.Source = "$PSScriptRoot\$Image"
         }
 
-        if (-not $img.Source) {
+        if (-not $img.Source)
+        {
             $img = $null
             $Image = $null
         }
-        else {
-            $img.Margin = "0, 10, 0, 0"
+        else
+        {
+            $img.Margin = '0, 10, 0, 0'
             $img.MaxWidth = $img.Source.Width
             $img.MaxHeight = $img.Source.Height
             $img.HorizontalAlignment = 'Center'
@@ -307,30 +327,35 @@ function Show-AnyBox
 
         if (($inPrmpt = New-TextBlock -RefForm ([ref]$form) -Text $p.Message -FontFamily $p.FontFamily -FontSize $p.FontSize -FontColor $p.FontColor -ContentAlignment $p.Alignment))
         {
-            if ($p.Collapsible) {
+            if ($p.Collapsible)
+            {
                 $inPrmpt.Margin = 0
                 $expander.Header = $inPrmpt
             }
-            elseif ($p.MessagePosition -eq [AnyBox.MessagePosition]::Left) {
-                $inPrmpt.Margin = "0, 10, 5, 0"
+            elseif ($p.MessagePosition -eq [AnyBox.MessagePosition]::Left)
+            {
+                $inPrmpt.Margin = '0, 10, 5, 0'
                 $inPanel.AddChild($inPrmpt)
             }
-            elseif ($group_stack) {
+            elseif ($group_stack)
+            {
                 $group_stack.AddChild($inPrmpt)
             }
-            else {
+            else
+            {
                 $form.highStack.AddChild($inPrmpt)
             }
         }
     }
 
     $tab_panel = $null
-    if ($Prompts | Where-Object { $_.Tab }) {
+    if ($Prompts | Where-Object { $_.Tab })
+    {
         $tab_panel = New-Object System.Windows.Controls.TabControl
         $tab_panel.HorizontalAlignment = 'Stretch'
         $tab_panel.VerticalAlignment = 'Stretch'
         $tab_panel.Margin = '0, 10, 0, 0'
-        $tab_panel.Padding = "5, 0, 5, 10"
+        $tab_panel.Padding = '5, 0, 5, 10'
         $tab_panel.Background = 'Transparent'
         $form.Add('Tabs', $tab_panel)
     }
@@ -340,7 +365,8 @@ function Show-AnyBox
 
         $tab_stack = $null
 
-        if ($tab_panel) {
+        if ($tab_panel)
+        {
             $tab_stack = New-Object System.Windows.Controls.StackPanel
             $tab_stack.HorizontalAlignment = 'Stretch'
             $tab_stack.VerticalAlignment = 'Stretch'
@@ -353,7 +379,8 @@ function Show-AnyBox
 
             $group_stack = $null
 
-            if ($tab_panel -or $groupName) {
+            if ($tab_panel -or $groupName)
+            {
                 $group_stack = New-Object System.Windows.Controls.StackPanel
                 $group_stack.HorizontalAlignment = 'Stretch'
                 $group_stack.VerticalAlignment = 'Stretch'
@@ -367,22 +394,37 @@ function Show-AnyBox
                 $inPanel = $null # when 'MessagePosition' = 'Left'
                 $expander = $null # when 'Collapsible' = $true
 
-                if ($prmpt -is [string]) {
+                if ($prmpt -is [string])
+                {
                     $prmpt = New-AnyBoxPrompt -Name "Input_$i" -Message $prmpt
                     $Prompts[$i] = $prmpt
                 }
-                elseif (-not $prmpt.Name) {
+                elseif (-not $prmpt.Name)
+                {
                     $prmpt.Name = "Input_$i"
                 }
 
                 $form.Result.Add($prmpt.Name, $prmpt.DefaultValue)
 
-                if (-not $prmpt.Alignment) { $prmpt.Alignment = $ContentAlignment }
-                if (-not $prmpt.FontFamily) { $prmpt.FontFamily = $FontFamily }
-                if (-not $prmpt.FontSize) { $prmpt.FontSize = $FontSize }
-                if (-not $prmpt.FontColor) { $prmpt.FontColor = $FontColor }
+                if (-not $prmpt.Alignment)
+                {
+                    $prmpt.Alignment = $ContentAlignment 
+                }
+                if (-not $prmpt.FontFamily)
+                {
+                    $prmpt.FontFamily = $FontFamily 
+                }
+                if (-not $prmpt.FontSize)
+                {
+                    $prmpt.FontSize = $FontSize 
+                }
+                if (-not $prmpt.FontColor)
+                {
+                    $prmpt.FontColor = $FontColor 
+                }
 
-                if ($prmpt.Collapsible) {
+                if ($prmpt.Collapsible)
+                {
                     $expander = New-Object System.Windows.Controls.Expander
                     $expander.BorderThickness = 1
                     $expander.BorderBrush = $AccentColor
@@ -393,7 +435,8 @@ function Show-AnyBox
                     $expander.HorizontalAlignment = 'Stretch'
                     $expander.HorizontalContentAlignment = 'Stretch'
                 }
-                elseif ($prmpt.MessagePosition -eq [AnyBox.MessagePosition]::Left) {
+                elseif ($prmpt.MessagePosition -eq [AnyBox.MessagePosition]::Left)
+                {
                     $inPanel = New-Object System.Windows.Controls.DockPanel
                     $inPanel.LastChildFill = $true
                 }
@@ -415,28 +458,33 @@ function Show-AnyBox
                             $null = $inBox.Items.Add((New-TextBlock -RefForm ([ref]$form) -Text $_ -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor 'Black' -Margin 0 -ContentAlignment $prmpt.Alignment))
                         }
 
-                        if ($prmpt.DefaultValue) {
+                        if ($prmpt.DefaultValue)
+                        {
                             $inBox.SelectedItem = $inBox.Items | Where-Object { $_.Text -eq $prmpt.DefaultValue } | Select-Object -First 1
                         }
 
                         $inBox.add_SelectionChanged({
-                            $form.Result[$_.Source.Name] = $_.Source.SelectedItem.Text
-                        })
+                                $form.Result[$_.Source.Name] = $_.Source.SelectedItem.Text
+                            })
                     }
                     else
-                    {	# radio
+                    {
+                        # radio
                         $inBox = New-Object System.Windows.Controls.StackPanel
                         $inBox.HorizontalAlignment = $prmpt.Alignment
-                        if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::Radio_Wide) {
+                        if ($prmpt.ShowSetAs -eq [AnyBox.SetPresentation]::Radio_Wide)
+                        {
                             $inBox.Orientation = 'Horizontal'
                         }
 
                         $prmpt.ValidateSet | ForEach-Object {
                             $r = New-Object System.Windows.Controls.RadioButton
-                            if ($prmpt.RadioGroup) {
+                            if ($prmpt.RadioGroup)
+                            {
                                 $r.GroupName = $prmpt.RadioGroup
                             }
-                            else {
+                            else
+                            {
                                 $r.GroupName = "Group_$i"
                             }
                             $r.Content = $_
@@ -452,21 +500,23 @@ function Show-AnyBox
                             $r.HorizontalContentAlignment = 'Left'
 
                             $r.add_Unchecked({
-                                if ($form.Result[$_.Source.Parent.Name] -eq $_.Source.Content) {
-                                    $form.Result[$_.Source.Parent.Name] = $null
-                                }
-                            })
+                                    if ($form.Result[$_.Source.Parent.Name] -eq $_.Source.Content)
+                                    {
+                                        $form.Result[$_.Source.Parent.Name] = $null
+                                    }
+                                })
 
                             $r.add_Checked({
-                                $form.Result[$_.Source.Parent.Name] = $_.Source.Content
-                            })
+                                    $form.Result[$_.Source.Parent.Name] = $_.Source.Content
+                                })
 
                             $inBox.AddChild($r)
                         }
                     }
                 }
                 elseif ($prmpt.InputType -eq [AnyBox.InputType]::Checkbox)
-                { # Check box
+                {
+                    # Check box
                     $inBox = New-Object System.Windows.Controls.CheckBox
                     $inBox.Content = $prmpt.Message
                     $inBox.FontSize = $prmpt.FontSize
@@ -477,11 +527,12 @@ function Show-AnyBox
                     $inBox.HorizontalContentAlignment = 'Left'
 
                     $inBox.add_Click({
-                        $form.Result[$_.Source.Name] = $_.Source.IsChecked
-                    })
+                            $form.Result[$_.Source.Name] = $_.Source.IsChecked
+                        })
                 }
                 elseif ($prmpt.InputType -eq [AnyBox.InputType]::Password)
-                {	# Password box
+                {
+                    # Password box
                     & $addMsgBox $prmpt
 
                     $inBox = New-Object System.Windows.Controls.PasswordBox
@@ -495,11 +546,12 @@ function Show-AnyBox
                     $inBox.Background = 'WhiteSmoke'
 
                     $inBox.add_PasswordChanged({
-                        $form.Result[$_.Source.Name] = $_.Source.SecurePassword
-                    })
+                            $form.Result[$_.Source.Name] = $_.Source.SecurePassword
+                        })
                 }
                 elseif ($prmpt.InputType -eq [AnyBox.InputType]::Date)
-                {	# Date picker
+                {
+                    # Date picker
                     & $addMsgBox $prmpt
 
                     $inBox = New-Object System.Windows.Controls.DatePicker
@@ -512,27 +564,31 @@ function Show-AnyBox
                     $inBox.Background = 'WhiteSmoke'
 
                     $inBox.add_SelectedDateChanged({
-                        $form.Result[$_.Source.Name] = $_.Source.Text
-                    })
+                            $form.Result[$_.Source.Name] = $_.Source.Text
+                        })
                 }
                 elseif ($prmpt.InputType -eq [AnyBox.InputType]::Link)
-                { # Hyperlink
+                {
+                    # Hyperlink
                     $inBox = New-TextBlock -RefForm ([ref]$form) -Text $prmpt.Message -FontFamily $prmpt.FontFamily -FontSize $prmpt.FontSize -FontColor $prmpt.FontColor -ContentAlignment $prmpt.Alignment
                     $form.Result[$prmpt.Name] = $false
                     $inBox.TextDecorations = 'Underline'
                     $inBox.Cursor = 'Hand'
                     $inBox.Tooltip = $prmpt.DefaultValue
                     [string]$onClick = $null # "`$_.Source.Foreground = 'Navy'; "
-                    if ($prmpt.DefaultValue) {
+                    if ($prmpt.DefaultValue)
+                    {
                         $onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.DefaultValue)'"
                     }
-                    else {
+                    else
+                    {
                         $onClick = "`$form.Result[`$_.Source.Name] = `$true; start '$($prmpt.Message)'"
                     }
                     $inBox.add_MouseLeftButtonDown([scriptblock]::Create($onClick))
                 }
                 else
-                {	# Text box
+                {
+                    # Text box
                     & $addMsgBox $prmpt
 
                     $inBox = New-Object System.Windows.Controls.TextBox
@@ -547,7 +603,8 @@ function Show-AnyBox
                     $inBox.IsReadOnly = $prmpt.ReadOnly
                     $inBox.IsEnabled = (-not $prmpt.ReadOnly)
 
-                    if ($prmpt.DefaultValue -ne $null) {
+                    if ($prmpt.DefaultValue -ne $null)
+                    {
                         $inBox.Text = $prmpt.DefaultValue
                     }
 
@@ -565,11 +622,11 @@ function Show-AnyBox
                         $inBox.Height = $inBox.MaxHeight
                     }
 
-                    $inBox.add_GotFocus({$_.Source.SelectAll()})
+                    $inBox.add_GotFocus({ $_.Source.SelectAll() })
 
                     $inBox.add_TextChanged({
-                        $form.Result[$_.Source.Name] = $_.Source.Text
-                    })
+                            $form.Result[$_.Source.Name] = $_.Source.Text
+                        })
 
                     ##############################################
 
@@ -577,7 +634,7 @@ function Show-AnyBox
                     {
                         $filePanel = New-Object System.Windows.Controls.DockPanel
                         $filePanel.LastChildFill = $true
-                        $filePanel.Margin = "0, 10, 0, 0"
+                        $filePanel.Margin = '0, 10, 0, 0'
                         # $filePanel.HorizontalAlignment = 'Stretch'
 
                         $fileBtn = New-Object System.Windows.Controls.Button
@@ -594,11 +651,14 @@ function Show-AnyBox
 
                         [string]$init_dir = $null
 
-                        if ($prmpt.DefaultValue) {
-                            if (Test-Path $prmpt.DefaultValue -PathType Leaf) {
+                        if ($prmpt.DefaultValue)
+                        {
+                            if (Test-Path $prmpt.DefaultValue -PathType Leaf)
+                            {
                                 $init_dir = Split-Path $prmpt.DefaultValue -Parent
                             }
-                            elseif (Test-Path $prmpt.DefaultValue -PathType Container) {
+                            elseif (Test-Path $prmpt.DefaultValue -PathType Container)
+                            {
                                 $init_dir = $prmpt.DefaultValue
                             }
                         }
@@ -606,62 +666,74 @@ function Show-AnyBox
                         if ($prmpt.InputType -eq [AnyBox.InputType]::FileOpen)
                         {
                             $fileBtn.add_Click({
-                                [string]$inBoxName = $_.Source.Name.Replace('btn_','')
-                                $opnWin = New-Object Microsoft.Win32.OpenFileDialog
-                                $opnWin.Title = 'Open File'
-                                $opnWin.CheckFileExists = $true
+                                    [string]$inBoxName = $_.Source.Name.Replace('btn_', '')
+                                    $opnWin = New-Object Microsoft.Win32.OpenFileDialog
+                                    $opnWin.Title = 'Open File'
+                                    $opnWin.CheckFileExists = $true
                                 
-                                if ($init_dir) {
-                                    $opnWin.InitialDirectory = $init_dir
-                                }
+                                    if ($init_dir)
+                                    {
+                                        $opnWin.InitialDirectory = $init_dir
+                                    }
 
-                                if ($opnWin.ShowDialog()) {
-                                    if (-not (Test-Path $opnWin.FileName)) {
-                                        Show-AnyBox @childWinParams -Message 'File not found.' -Buttons 'OK' -DefaultButton 'OK'
+                                    if ($opnWin.ShowDialog())
+                                    {
+                                        if (-not (Test-Path $opnWin.FileName))
+                                        {
+                                            Show-AnyBox @childWinParams -Message 'File not found.' -Buttons 'OK' -DefaultButton 'OK'
+                                        }
+                                        else
+                                        {
+                                            $form[$inBoxName].Text = $opnWin.FileName
+                                        }
                                     }
-                                    else {
-                                        $form[$inBoxName].Text = $opnWin.FileName
-                                    }
-                                }
-                            })
+                                })
                         }
                         elseif ($prmpt.InputType -eq [AnyBox.InputType]::FileSave)
                         {
                             $fileBtn.add_Click({
-                                [string]$inBoxName = $_.Source.Name.Replace('btn_','')
-                                $savWin = New-Object Microsoft.Win32.SaveFileDialog
-                                $savWin.Title = 'Save File'
-                                $savWin.OverwritePrompt = $false
+                                    [string]$inBoxName = $_.Source.Name.Replace('btn_', '')
+                                    $savWin = New-Object Microsoft.Win32.SaveFileDialog
+                                    $savWin.Title = 'Save File'
+                                    $savWin.OverwritePrompt = $false
 
-                                if ($init_dir) {
-                                    $savWin.InitialDirectory = $init_dir
-                                }
+                                    if ($init_dir)
+                                    {
+                                        $savWin.InitialDirectory = $init_dir
+                                    }
 
-                                if ($savWin.ShowDialog() -and $savWin.FileName) {
-                                    $form[$inBoxName].Text = $savWin.FileName
-                                }
-                            })
+                                    if ($savWin.ShowDialog() -and $savWin.FileName)
+                                    {
+                                        $form[$inBoxName].Text = $savWin.FileName
+                                    }
+                                })
                         }
-                        else { # [AnyBox.InputType]::FolderOpen
+                        else
+                        {
+                            # [AnyBox.InputType]::FolderOpen
                             $fileBtn.add_Click({
-                                [string]$inBoxName = $_.Source.Name.Replace('btn_','')
-                                $opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
-                                $opnWin.Description = 'Select Folder'
-                                $opnWin.ShowNewFolderButton = $true
+                                    [string]$inBoxName = $_.Source.Name.Replace('btn_', '')
+                                    $opnWin = New-Object System.Windows.Forms.FolderBrowserDialog
+                                    $opnWin.Description = 'Select Folder'
+                                    $opnWin.ShowNewFolderButton = $true
 
-                                if ($init_dir) {
-                                    $opnWin.SelectedPath = $init_dir
-                                }
+                                    if ($init_dir)
+                                    {
+                                        $opnWin.SelectedPath = $init_dir
+                                    }
 
-                                if ($opnWin.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-                                    if (-not (Test-Path $opnWin.SelectedPath)) {
-                                        Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons 'OK' -DefaultButton 'OK'
+                                    if ($opnWin.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK)
+                                    {
+                                        if (-not (Test-Path $opnWin.SelectedPath))
+                                        {
+                                            Show-AnyBox @childWinParams -Message 'Folder not found.' -Buttons 'OK' -DefaultButton 'OK'
+                                        }
+                                        else
+                                        {
+                                            $form[$inBoxName].Text = $opnWin.SelectedPath
+                                        }
                                     }
-                                    else {
-                                        $form[$inBoxName].Text = $opnWin.SelectedPath
-                                    }
-                                }
-                            })
+                                })
                         }
 
                         $filePanel.AddChild($fileBtn)
@@ -677,7 +749,8 @@ function Show-AnyBox
 
                 $form.Add($inBox.Name, $inBox)
 
-                if ($filePanel) {
+                if ($filePanel)
+                {
                     $filePanel.AddChild($inBox)
                     $inBox = $filePanel
                     $filePanel = $null
@@ -685,44 +758,52 @@ function Show-AnyBox
 
                 $toAdd = $null
 
-                if ($expander) {
+                if ($expander)
+                {
                     $inBox.Margin = 0
-                    $expander.Margin = "0, 10, 0, 0"
+                    $expander.Margin = '0, 10, 0, 0'
                     $expander.Content = $inBox
                     $toAdd = $expander
                     # $form.highStack.AddChild($expander)
                 }
                 else
                 {
-                    $inBox.Margin = "0, 10, 0, 0"
+                    $inBox.Margin = '0, 10, 0, 0'
 
-                    if ($inPanel) {
+                    if ($inPanel)
+                    {
                         $inPanel.AddChild($inBox)
                         $toAdd = $inPanel
                         # $form.highStack.AddChild($inPanel)
                     }
-                    else {
+                    else
+                    {
                         $toAdd = $inBox
                         # $form.highStack.AddChild($inBox)
                     }
                 }
 
-                if ($group_stack) {
+                if ($group_stack)
+                {
                     $group_stack.AddChild($toAdd)
                 }
-                else {
+                else
+                {
                     $form.highStack.AddChild($toAdd)
                 }
 
-                if ($prmpt.ShowSeparator) {
+                if ($prmpt.ShowSeparator)
+                {
                     $sep = New-Object System.Windows.Controls.Separator
-                    $sep.Margin = "10, 10, 10, 0"
+                    $sep.Margin = '10, 10, 10, 0'
                     $sep.Background = $AccentColor
 
-                    if ($group_stack) {
+                    if ($group_stack)
+                    {
                         $group_stack.AddChild($sep)
                     }
-                    else {
+                    else
+                    {
                         $form.highStack.AddChild($sep)
                     }
                 }
@@ -737,16 +818,20 @@ function Show-AnyBox
             if ($group_stack)
             {
                 $group_box = $null
-                if ($groupName) {
-                    if ($CollapsibleGroups) {
+                if ($groupName)
+                {
+                    if ($CollapsibleGroups)
+                    {
                         $group_box = New-Object System.Windows.Controls.Expander
                         $group_box.IsExpanded = $(-not $CollapsedGroups)
                     }
-                    else {
+                    else
+                    {
                         $group_box = New-Object System.Windows.Controls.GroupBox
                     }
 
-                    if ($groupName -imatch '[a-z]') {
+                    if ($groupName -imatch '[a-z]')
+                    {
                         $header = New-TextBlock -RefForm ([ref]$form) -text $groupName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
                         $header.VerticalAlignment = 'Center'
                         $header.HorizontalAlignment = 'Left'
@@ -766,26 +851,33 @@ function Show-AnyBox
                     $group_box.Content = $group_stack
                 }
 
-                if (-not $tabName) {
-                    if ($groupName) {
+                if (-not $tabName)
+                {
+                    if ($groupName)
+                    {
                         $form.highStack.AddChild($group_box)
                     }
-                    else {
+                    else
+                    {
                         $form.highStack.AddChild($group_stack)
                     }
                 }
-                else {
-                    if ($groupName) {
+                else
+                {
+                    if ($groupName)
+                    {
                         $tab_stack.AddChild($group_box)
                     }
-                    else {
+                    else
+                    {
                         $tab_stack.AddChild($group_stack)
                     }
                 }
             }
         }
 
-        if ($tab_panel) {
+        if ($tab_panel)
+        {
             $tab = New-Object System.Windows.Controls.TabItem
             $tab.Header = New-TextBlock -RefForm ([ref]$form) -text $tabName -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -margin 0 -ContentAlignment $ContentAlignment
             $tab.Content = $tab_stack
@@ -795,7 +887,8 @@ function Show-AnyBox
     }
     
 
-    if ($tab_panel) {
+    if ($tab_panel)
+    {
         $form.highStack.AddChild($tab_panel)
     }
 
@@ -805,7 +898,8 @@ function Show-AnyBox
 
         $form.Result.Add('grid_select', $null)
 
-        if ($GridAsList) {
+        if ($GridAsList)
+        {
             $GridData = $GridData | ConvertTo-Long
         }
 
@@ -813,27 +907,33 @@ function Show-AnyBox
 
         $dataGrid.Visibility = 'Visible'
 
-        if ($SelectionMode -eq 'None') {
+        if ($SelectionMode -eq 'None')
+        {
             $dataGrid.IsEnabled = $false
         }
-        else {
-            if ($SelectionMode -like 'Multi*') {
+        else
+        {
+            if ($SelectionMode -like 'Multi*')
+            {
                 $dataGrid.SelectionMode = 'Extended'
             }
-            else {
+            else
+            {
                 $dataGrid.SelectionMode = 'Single'
             }
 
-            if ($SelectionMode -like '*Row') {
+            if ($SelectionMode -like '*Row')
+            {
                 $dataGrid.SelectionUnit = 'FullRow'
             }
-            else {
+            else
+            {
                 $dataGrid.SelectionUnit = 'Cell'
             }
         }
 
         $dataGrid.ClipboardCopyMode = 'ExcludeHeader'
-        $dataGrid.Margin = "0, 10, 0, 0"
+        $dataGrid.Margin = '0, 10, 0, 0'
         $dataGrid.IsReadOnly = $true
         $dataGrid.AutoGenerateColumns = $true
         $dataGrid.VerticalScrollBarVisibility = 'Auto'
@@ -855,35 +955,38 @@ function Show-AnyBox
         if ($SelectionMode -eq 'SingleCell')
         {
             $form['data_grid'].add_SelectedCellsChanged({
-                $selection = $null
+                    $selection = $null
 
-                if ($form['data_grid'].SelectedCells.Count -gt 0) {
-                    [psobject]$selection = @($form['data_grid'].SelectedCells | ForEach-Object { ([System.Windows.Controls.TextBlock]$_.Column.GetCellContent($_.Item)).Text })[0]
-                }
+                    if ($form['data_grid'].SelectedCells.Count -gt 0)
+                    {
+                        [psobject]$selection = @($form['data_grid'].SelectedCells | ForEach-Object { ([System.Windows.Controls.TextBlock]$_.Column.GetCellContent($_.Item)).Text })[0]
+                    }
                 
-                $form.Result['grid_select'] = $selection
-            })
+                    $form.Result['grid_select'] = $selection
+                })
         }
         else
         {
             $form['data_grid'].add_SelectionChanged({			
-                $selection = $null
+                    $selection = $null
 
-                if ($form['data_grid'].SelectedItems.Count -gt 0)
-                {
-                    switch ($SelectionMode)
+                    if ($form['data_grid'].SelectedItems.Count -gt 0)
                     {
-                        'SingleRow' {
-                            [psobject]$selection = $form['data_grid'].SelectedItem
-                        }
-                        'MultiRow' {
-                            [psobject[]]$selection = @($form['data_grid'].SelectedItems)
+                        switch ($SelectionMode)
+                        {
+                            'SingleRow'
+                            {
+                                [psobject]$selection = $form['data_grid'].SelectedItem
+                            }
+                            'MultiRow'
+                            {
+                                [psobject[]]$selection = @($form['data_grid'].SelectedItems)
+                            }
                         }
                     }
-                }
                 
-                $form.Result['grid_select'] = $selection
-            })
+                    $form.Result['grid_select'] = $selection
+                })
         }
 
         if (-not $NoGridSearch)
@@ -892,43 +995,52 @@ function Show-AnyBox
             $form.highStack.AddChild($gridMsg)
             
             [scriptblock]$filterGrid = {
-                if (-not $form.filterText.Text) {
+                if (-not $form.filterText.Text)
+                {
                     $form.data_grid.ItemsSource = $GridData
                     $form['txt_Grid'].Text = '{0} Results' -f $GridData.Count
                 }
-                elseif ($form.filterBy.SelectedItem) {
+                elseif ($form.filterBy.SelectedItem)
+                {
                     [string]$filterBy = $form.filterBy.SelectedItem.ToString()
                     [string]$filter = $form.filterText.Text
 
                     switch ($form.filterMatch.SelectedItem)
                     {
-                        'contains' {
+                        'contains'
+                        {
                             $filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -match $filter)
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -Match $filter)
                             break
                         }
-                        'not contains' {
+                        'not contains'
+                        {
                             $filter = [System.Text.RegularExpressions.Regex]::Escape($filter)
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -notmatch $filter)
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -NotMatch $filter)
                             break
                         }
-                        'starts with' {
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -like "$filter*")
+                        'starts with'
+                        {
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -Like "$filter*")
                             break
                         }
-                        'ends with' {
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -like "*$filter")
+                        'ends with'
+                        {
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -Like "*$filter")
                             break
                         }
-                        'equals' {
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -eq $filter)
+                        'equals'
+                        {
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -EQ $filter)
                             break
                         }
-                        'not equals' {
-                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -ne $filter)
+                        'not equals'
+                        {
+                            $form.data_grid.ItemsSource = @($GridData | Where-Object $filterBy -NE $filter)
                             break
                         }
-                        Default {
+                        Default
+                        {
                             $form.data_grid.ItemsSource = $GridData
                         }
                     }
@@ -942,7 +1054,7 @@ function Show-AnyBox
             $fltrBy = New-Object System.Windows.Controls.ComboBox
             $fltrBy.Name = 'filterBy'
             $fltrBy.FontSize = $FontSize
-            $fltrBy.Margin = "0, 10, 0, 0"
+            $fltrBy.Margin = '0, 10, 0, 0'
             $fltrBy.MinHeight = 25
             $fltrBy.IsReadOnly = $true
             $fltrBy.HorizontalAlignment = 'Left'
@@ -954,7 +1066,7 @@ function Show-AnyBox
             $fltrMatch = New-Object System.Windows.Controls.ComboBox
             $fltrMatch.Name = 'filterMatch'
             $fltrMatch.FontSize = $FontSize
-            $fltrMatch.Margin = "0, 10, 0, 0"
+            $fltrMatch.Margin = '0, 10, 0, 0'
             $fltrMatch.MinHeight = 25
             $fltrMatch.IsReadOnly = $true
             $fltrMatch.HorizontalAlignment = 'Left'
@@ -968,7 +1080,7 @@ function Show-AnyBox
             $fltrBox = New-Object System.Windows.Controls.TextBox
             $fltrBox.Name = 'filterText'
             $fltrBox.Padding = '3, 0, 0, 0'
-            $fltrBox.Margin = "0, 10, 0, 0"
+            $fltrBox.Margin = '0, 10, 0, 0'
             $fltrBox.MinWidth = 50
             $fltrBox.TextAlignment = 'Left'
             $fltrBox.MinHeight = 25
@@ -981,7 +1093,7 @@ function Show-AnyBox
             $fltrBox.AcceptsReturn = $false
             $fltrBox.AcceptsTab = $false
             $fltrBox.add_TextChanged($filterGrid)
-            $fltrBox.add_GotFocus({$_.Source.SelectAll()})
+            $fltrBox.add_GotFocus({ $_.Source.SelectAll() })
 
             $fltrPanel = New-Object System.Windows.Controls.DockPanel
             $fltrPanel.LastChildFill = $true
@@ -996,26 +1108,29 @@ function Show-AnyBox
         }
     }
 
-    if ($ProgressBar) {
+    if ($ProgressBar)
+    {
         $pb = New-Object System.Windows.Controls.ProgressBar
         $pb.Name = 'progress_bar'
         $pb.IsIndeterminate = $true
         $pb.MinHeight = 25;
         $pb.HorizontalAlignment = 'Stretch'
         $pb.VerticalAlignment = 'Center'
-        $pb.Margin = "0, 10, 0, 0"
+        $pb.Margin = '0, 10, 0, 0'
         $form.Add('progress_bar', $pb)
         $form.lowStack.AddChild($pb)
     }
 
     # Add comment textblocks.
-    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment)) {
+    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+    {
         $txtMsg.FontStyle = 'Italic'
         $txtMsg.FontWeight = 'Normal'
         $form.lowStack.AddChild($txtMsg)
     }
 
-    if ($Timeout -and $Timeout -gt 0 -and $Countdown) {
+    if ($Timeout -and $Timeout -gt 0 -and $Countdown)
+    {
         # Create countdown textblock.
         $txtTime = New-TextBlock -RefForm ([ref]$form) -Text '---' -Name 'txt_Countdown' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment
         $form.lowStack.AddChild($txtTime)
@@ -1023,25 +1138,34 @@ function Show-AnyBox
 
     if ($Buttons.Count -gt 0)
     {
-        if ($Buttons.Count -eq 1) {
-            if ($Buttons[0] -is [AnyBox.Button]) {
+        if ($Buttons.Count -eq 1)
+        {
+            if ($Buttons[0] -is [AnyBox.Button])
+            {
                 $Buttons[0].IsDefault = $true
             }
-            else { # string
+            else
+            {
+                # string
                 $DefaultButton = $Buttons[0]
             }
         }
 
         $Buttons | Where-Object { $_ -is [string] -or -not $_.OnClick } | ForEach-Object {
-            if ($_ -is [AnyBox.Button]) {
-                if ($_.Name) {
+            if ($_ -is [AnyBox.Button])
+            {
+                if ($_.Name)
+                {
                     $form.Result.Add($_.Name, $false)
                 }
-                else {
+                else
+                {
                     $form.Result.Add($_.Text, $false)
                 }
             }
-            else { # string
+            else
+            {
+                # string
                 $form.Result.Add($_ -as [string], $false)
             }
         }
@@ -1055,7 +1179,7 @@ function Show-AnyBox
             $btnStack = New-Object System.Windows.Controls.StackPanel
             $btnStack.Orientation = 'Horizontal'
             $btnStack.HorizontalAlignment = 'Center'
-            $btnStack.Margin = "0, 10, 0, 0"
+            $btnStack.Margin = '0, 10, 0, 0'
 
             for ($i = 0; $i -lt $btn_per_row -and $c -lt $Buttons.Count; $i++)
             {
@@ -1063,7 +1187,7 @@ function Show-AnyBox
                 $btn.MinHeight = 35
                 $btn.MinWidth = 75
                 $btn.FontSize = $FontSize
-                $btn.Margin = "10, 0, 10, 0"
+                $btn.Margin = '10, 0, 10, 0'
                 $btn.VerticalContentAlignment = 'Center'
                 $btn.HorizontalContentAlignment = 'Center'
 
@@ -1071,78 +1195,94 @@ function Show-AnyBox
                 {
                     $btn.Name = $Buttons[$c].Name
                     $btn.Content = '_' + $Buttons[$c].Text
-                    if ($Buttons[$c].ToolTip) {
+                    if ($Buttons[$c].ToolTip)
+                    {
                         $btn.ToolTip = $Buttons[$c].ToolTip
                     }
                     $btn.IsCancel = $Buttons[$c].IsCancel
                     $btn.IsDefault = $Buttons[$c].IsDefault
 
-                    if ($Buttons[$c].OnClick) {
+                    if ($Buttons[$c].OnClick)
+                    {
                         $btn.add_Click([scriptblock]::Create((@'
 $form.Result | Foreach-Object -Process {{
 {0}
 }}
 '@ -f $Buttons[$c].OnClick.ToString())))
                     }
-                    elseif ($Buttons[$c].IsCancel) {
+                    elseif ($Buttons[$c].IsCancel)
+                    {
                         $btn.add_Click({
-                            [string]$btn_name = $null
-                            if ($_.Source.Name) {
-                                $btn_name = $_.Source.Name
-                            }
-                            else {
-                                $btn_name = $_.Source.Content.TrimStart('_')
-                            }
-
-                            $form.Result[$btn_name] = $true
-                            $form.Window.Close()
-                        })
-                    }
-                    else {
-                        $btn.add_Click({
-                            $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
-                            if (-not $input_test.Is_Valid) {
-                                $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
-                            }
-                            else {
                                 [string]$btn_name = $null
-                                if ($_.Source.Name) {
+                                if ($_.Source.Name)
+                                {
                                     $btn_name = $_.Source.Name
                                 }
-                                else {
+                                else
+                                {
                                     $btn_name = $_.Source.Content.TrimStart('_')
                                 }
 
                                 $form.Result[$btn_name] = $true
                                 $form.Window.Close()
-                        }})
+                            })
+                    }
+                    else
+                    {
+                        $btn.add_Click({
+                                $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
+                                if (-not $input_test.Is_Valid)
+                                {
+                                    $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
+                                }
+                                else
+                                {
+                                    [string]$btn_name = $null
+                                    if ($_.Source.Name)
+                                    {
+                                        $btn_name = $_.Source.Name
+                                    }
+                                    else
+                                    {
+                                        $btn_name = $_.Source.Content.TrimStart('_')
+                                    }
+
+                                    $form.Result[$btn_name] = $true
+                                    $form.Window.Close()
+                                } })
                     }
                 }
-                else {
+                else
+                {
                     # $btn.Name = $Buttons[$c]
                     $btn.Content = '_' + ($Buttons[$c] -as [string])
 
-                    if ($CancelButton -eq $Buttons[$c]) {
+                    if ($CancelButton -eq $Buttons[$c])
+                    {
                         $btn.add_Click({
-                            [string]$btn_name = $_.Source.Content.TrimStart('_')
-                            $form.Result[$btn_name] = $true
-                            $form.Window.Close()
-                        })
-                        $btn.IsCancel = $true
-                    }
-                    else {
-                        $btn.add_Click({
-                            $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
-                            if (-not $input_test.Is_Valid) {
-                                $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
-                            }
-                            else {
                                 [string]$btn_name = $_.Source.Content.TrimStart('_')
                                 $form.Result[$btn_name] = $true
                                 $form.Window.Close()
-                        }})
+                            })
+                        $btn.IsCancel = $true
+                    }
+                    else
+                    {
+                        $btn.add_Click({
+                                $input_test = Test-ValidInput -Prompts $Prompts -Inputs $form.Result
+                                if (-not $input_test.Is_Valid)
+                                {
+                                    $null = Show-AnyBox @childWinParams -Message $input_test.Message -Buttons 'OK' -DefaultButton 'OK'
+                                }
+                                else
+                                {
+                                    [string]$btn_name = $_.Source.Content.TrimStart('_')
+                                    $form.Result[$btn_name] = $true
+                                    $form.Window.Close()
+                                } })
 
-                        if ($DefaultButton -eq $Buttons[$c]) {
+                        if ($DefaultButton -eq $Buttons[$c])
+                        {
                             $btn.IsDefault = $true
                         }
                     }
@@ -1158,149 +1298,171 @@ $form.Result | Foreach-Object -Process {{
     }
 
     $form.Window.add_Loaded({
-        if ($form.Window.Owner) {
-            $form.Window.Owner.Opacity = 0.4
-        }
-
-        if ($PrepScript) {
-            $null = $form | ForEach-Object -Process $PrepScript
-        }
-
-        if ($GridData) {
-            if (-not $NoGridSearch) {
-                $form.filterBy.ItemsSource = @($form.data_grid.Columns.Header)
-                $form.filterBy.SelectedIndex = 0
-            }
-
-            $form.data_grid.Columns | ForEach-Object {
-                $_.CanUserSort = $true
-                $_.SortMemberPath = $_.Header.ToString()
-                $_.SortDirection = "Ascending"
-            }
-        }
-
-        if ($Prompts) {
-            [bool]$focused = $false
-            for ($i = 0; $i -lt $Prompts.Length; $i++) {
-                if (($form[$Prompts[$i].Name] -is [System.Windows.Controls.TextBox] -and [string]::IsNullOrEmpty($form[$Prompts[$i].Name].Text)) -or `
-                        ($form[$Prompts[$i].Name] -is [System.Windows.Controls.PasswordBox] -and $form[$Prompts[$i].Name].SecurePassword.Length -eq 0)) {
-                    $null = $form[$Prompts[$i].Name].Focus()
-                    $form[$Prompts[$i].Name].SelectAll()
-                    $focused = $true
-                    break
-                }
-            }
-
-            if (-not $focused -and $form[$Prompts[0].Name] -is [System.Windows.Controls.TextBox]) {
-                $null = $form[$Prompts[0].Name].Focus()
-                $form[$Prompts[0].Name].SelectAll()
-            }
-        }
-
-        if ($WindowStartupLocation -ne [AnyBox.WindowStartupLocation]::Center)
-        {
-            $form.Window.WindowStartupLocation = 'Manual'
-
-            switch ($WindowStartupLocation)
+            if ($form.Window.Owner)
             {
-                ([AnyBox.WindowStartupLocation]::Top) {
-                    $form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
-                    $form.Window.Top = 0
-                    break
+                $form.Window.Owner.Opacity = 0.4
+            }
+
+            if ($PrepScript)
+            {
+                $null = $form | ForEach-Object -Process $PrepScript
+            }
+
+            if ($GridData)
+            {
+                if (-not $NoGridSearch)
+                {
+                    $form.filterBy.ItemsSource = @($form.data_grid.Columns.Header)
+                    $form.filterBy.SelectedIndex = 0
                 }
-                ([AnyBox.WindowStartupLocation]::TopLeft) {
-                    $form.Window.Left = 0
-                    $form.Window.Top = 0
-                    break
-                }
-                ([AnyBox.WindowStartupLocation]::TopRight) {
-                    $form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
-                    $form.Window.Top = 0
-                    break
-                }
-                ([AnyBox.WindowStartupLocation]::Bottom) {
-                    $form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
-                    $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
-                    break
-                }
-                ([AnyBox.WindowStartupLocation]::BottomLeft) {
-                    $form.Window.Left = 0
-                    $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
-                    break
-                }
-                ([AnyBox.WindowStartupLocation]::BottomRight) {
-                    $form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
-                    $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
-                    break
+
+                $form.data_grid.Columns | ForEach-Object {
+                    $_.CanUserSort = $true
+                    $_.SortMemberPath = $_.Header.ToString()
+                    $_.SortDirection = 'Ascending'
                 }
             }
-        }
-    })
+
+            if ($Prompts)
+            {
+                [bool]$focused = $false
+                for ($i = 0; $i -lt $Prompts.Length; $i++)
+                {
+                    if (($form[$Prompts[$i].Name] -is [System.Windows.Controls.TextBox] -and [string]::IsNullOrEmpty($form[$Prompts[$i].Name].Text)) -or `
+                        ($form[$Prompts[$i].Name] -is [System.Windows.Controls.PasswordBox] -and $form[$Prompts[$i].Name].SecurePassword.Length -eq 0))
+                    {
+                        $null = $form[$Prompts[$i].Name].Focus()
+                        $form[$Prompts[$i].Name].SelectAll()
+                        $focused = $true
+                        break
+                    }
+                }
+
+                if (-not $focused -and $form[$Prompts[0].Name] -is [System.Windows.Controls.TextBox])
+                {
+                    $null = $form[$Prompts[0].Name].Focus()
+                    $form[$Prompts[0].Name].SelectAll()
+                }
+            }
+
+            if ($WindowStartupLocation -ne [AnyBox.WindowStartupLocation]::Center)
+            {
+                $form.Window.WindowStartupLocation = 'Manual'
+
+                switch ($WindowStartupLocation)
+                {
+                ([AnyBox.WindowStartupLocation]::Top)
+                    {
+                        $form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
+                        $form.Window.Top = 0
+                        break
+                    }
+                ([AnyBox.WindowStartupLocation]::TopLeft)
+                    {
+                        $form.Window.Left = 0
+                        $form.Window.Top = 0
+                        break
+                    }
+                ([AnyBox.WindowStartupLocation]::TopRight)
+                    {
+                        $form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
+                        $form.Window.Top = 0
+                        break
+                    }
+                ([AnyBox.WindowStartupLocation]::Bottom)
+                    {
+                        $form.Window.Left = ([System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth) / 2.0
+                        $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+                        break
+                    }
+                ([AnyBox.WindowStartupLocation]::BottomLeft)
+                    {
+                        $form.Window.Left = 0
+                        $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+                        break
+                    }
+                ([AnyBox.WindowStartupLocation]::BottomRight)
+                    {
+                        $form.Window.Left = [System.Windows.SystemParameters]::WorkArea.Width - $form.Window.ActualWidth
+                        $form.Window.Top = [System.Windows.SystemParameters]::WorkArea.Bottom - $form.Window.ActualHeight
+                        break
+                    }
+                }
+            }
+        })
 
     $form.Window.add_ContentRendered({
-        if ($While)
-        {
-            $_whilejob = Start-ThreadJob -ArgumentList $form,$While -ScriptBlock {
-                param([hashtable]$form, [scriptblock]$While)
+            if ($While)
+            {
+                $_whilejob = Start-ThreadJob -ArgumentList $form, $While -ScriptBlock {
+                    param([hashtable]$form, [scriptblock]$While)
 
-                while (-not $form['IsClosed'] -and (& $While))
-                {
-                    Start-Sleep -Seconds 1
+                    while (-not $form['IsClosed'] -and (& $While))
+                    {
+                        Start-Sleep -Seconds 1
+                    }
+
+                    if (-not $form['IsClosed'])
+                    {
+                        $form.Window.Dispatcher.Invoke(
+                            [action] { $form.Window.Close() },
+                            'Normal'
+                        )
+                    }
                 }
 
-                if (-not $form['IsClosed']) {
-                    $form.Window.Dispatcher.Invoke(
-                        [action]{$form.Window.Close()},
-                        "Normal"
-                    )
-                }
+                $form.Add('job', $_whilejob)
             }
 
-            $form.Add('job', $_whilejob)
-        }
+            if ($Timeout)
+            {
+                $timer = New-Object System.Windows.Threading.DispatcherTimer
+                $timer.Interval = [timespan]::FromSeconds(1.0)
+                [datetime]$script:end_at = [datetime]::Now.AddSeconds($Timeout + 1)
 
-        if ($Timeout)
-        {
-            $timer = New-Object System.Windows.Threading.DispatcherTimer
-            $timer.Interval = [timespan]::FromSeconds(1.0)
-            [datetime]$script:end_at = [datetime]::Now.AddSeconds($Timeout+1)
+                $timer.Add_Tick({
+                        [timespan]$remaining = $script:end_at.Subtract([datetime]::now)
+                        if ($Countdown)
+                        {
+                            $form.txt_Countdown.Text = $remaining.ToString('hh\:mm\:ss') 
+                        }
+            
+                        if ($remaining.TotalSeconds -le 0)
+                        {
+                            $form.Timer.Stop()
+                            $form.Result.TimedOut = $true
+                            $form.Window.Close()
+                        }
+                    })
 
-            $timer.Add_Tick({
-                [timespan]$remaining = $script:end_at.Subtract([datetime]::now)
-                if ($Countdown) { $form.txt_Countdown.Text = $remaining.ToString('hh\:mm\:ss') }
-                
-                if ($remaining.TotalSeconds -le 0) {
-                    $form.Timer.Stop()
-                    $form.Result.TimedOut = $true
-                    $form.Window.Close()
-                }
-            })
+                $form.Add('Timer', $timer)
 
-            $form.Add('Timer', $timer)
+                $timer.Start()
+            }
 
-            $timer.Start()
-        }
-
-        $form.Window.Activate()
-    })
+            $form.Window.Activate()
+        })
 
     $form.Window.add_Closed({
-        if ($Timeout -gt 0 -and $form['Timer'].IsEnabled) {
-            $form['Timer'].Stop()
-            $form['Timer'] = $null
-        }
+            if ($Timeout -gt 0 -and $form['Timer'].IsEnabled)
+            {
+                $form['Timer'].Stop()
+                $form['Timer'] = $null
+            }
 
-        $form['IsClosed'] = $true
+            $form['IsClosed'] = $true
 
-        if ($form.Window.Owner) {
-            $form.Window.Owner.Opacity = 1.0
-            $form.Window.Owner.Activate()
-        }
-    })
+            if ($form.Window.Owner)
+            {
+                $form.Window.Owner.Opacity = 1.0
+                $form.Window.Owner.Activate()
+            }
+        })
 
     $null = $form.Window.ShowDialog()
 
-    if ($form['job']) {
+    if ($form['job'])
+    {
         $null = $form['job'] | Receive-Job -Wait -AutoRemoveJob -ErrorAction Stop
     }
 

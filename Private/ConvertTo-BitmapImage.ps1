@@ -1,4 +1,5 @@
-function ConvertTo-BitmapImage {
+function ConvertTo-BitmapImage
+{
     <#
     .SYNOPSIS
         Converts a base64 string to a BitmapImage object.
@@ -16,8 +17,10 @@ function ConvertTo-BitmapImage {
         [string[]]$base64
     )
 
-    process {
-        foreach ($str in $base64) {
+    process
+    {
+        foreach ($str in $base64)
+        {
             $bmp = [System.Drawing.Bitmap]::FromStream((New-Object System.IO.MemoryStream (@(, [Convert]::FromBase64String($base64)))))
 
             $memory = New-Object System.IO.MemoryStream

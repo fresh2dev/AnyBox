@@ -1,4 +1,5 @@
-function New-AnyBoxPrompt {
+function New-AnyBoxPrompt
+{
     [cmdletbinding()]
     param(
         [string]$Message,
@@ -14,7 +15,7 @@ function New-AnyBoxPrompt {
         [string]$FontFamily,
         [string]$FontColor,
         [string]$DefaultValue,
-        [ValidateScript( {$_ -gt 0})]
+        [ValidateScript( { $_ -gt 0 })]
         [UInt16]$LineHeight = 1,
         [switch]$ReadOnly,
         [switch]$ValidateNotEmpty,
@@ -27,37 +28,48 @@ function New-AnyBoxPrompt {
         [switch]$Collapsed
     )
 
-    if ($Name -and $Name -notmatch '^[A-Za-z_]+[A-Za-z0-9_]*$') {
-        Write-Warning "Name must start with a letter or the underscore character (_), and must contain only letters, digits, or underscores."
+    if ($Name -and $Name -notmatch '^[A-Za-z_]+[A-Za-z0-9_]*$')
+    {
+        Write-Warning 'Name must start with a letter or the underscore character (_), and must contain only letters, digits, or underscores.'
         $Name = $null
     }
 
-    if ($InputType -ne [AnyBox.InputType]::Text) {
-        if ($InputType -eq [AnyBox.InputType]::None) {
+    if ($InputType -ne [AnyBox.InputType]::Text)
+    {
+        if ($InputType -eq [AnyBox.InputType]::None)
+        {
             return($null)
         }
 
-        if ($LineHeight -gt 1) {
+        if ($LineHeight -gt 1)
+        {
             Write-Warning "'-LineHeight' parameter is only valid with text input."
         }
 
-        if ($InputType -eq [AnyBox.InputType]::Checkbox) {
-            if (-not $Message) {
-                Write-Error "Checkbox input requires a message."
+        if ($InputType -eq [AnyBox.InputType]::Checkbox)
+        {
+            if (-not $Message)
+            {
+                Write-Error 'Checkbox input requires a message.'
                 break
             }
         }
-        elseif ($InputType -eq [AnyBox.InputType]::Link) {
-            if (-not $Message) {
-                Write-Error "Checkbox input requires a message."
+        elseif ($InputType -eq [AnyBox.InputType]::Link)
+        {
+            if (-not $Message)
+            {
+                Write-Error 'Checkbox input requires a message.'
                 break
             }
-            if (-not $FontColor) {
+            if (-not $FontColor)
+            {
                 $FontColor = 'Blue'
             }
         }
-        elseif ($InputType -eq [AnyBox.InputType]::Password) {
-            if ($DefaultValue) {
+        elseif ($InputType -eq [AnyBox.InputType]::Password)
+        {
+            if ($DefaultValue)
+            {
                 Write-Warning 'Password input does not accept a default value.'
                 $DefaultValue = $null
             }

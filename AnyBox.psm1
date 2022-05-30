@@ -1,23 +1,27 @@
-#handle PS2
-if (-not $PSScriptRoot) {
-    $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+[string]$ModuleRoot = $PSScriptRoot
+
+if (-not $ModuleRoot)
+{
+    $ModuleRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
 }
-$ModuleRoot = $PSScriptRoot
 
 #Get public and private function definition files.
-$Public = @( Get-ChildItem -Path $PSScriptRoot\Public\*.ps1 -ErrorAction SilentlyContinue )
-$Private = @( Get-ChildItem -Path $PSScriptRoot\Private\*.ps1 -ErrorAction SilentlyContinue )
-$Types = @( Get-ChildItem -Path $PSScriptRoot\Types\*.ps1 -ErrorAction SilentlyContinue )
+$Public = @( Get-ChildItem -Path "$ModuleRoot\Public\*.ps1" -ErrorAction SilentlyContinue )
+$Private = @( Get-ChildItem -Path "$ModuleRoot\Private\*.ps1" -ErrorAction SilentlyContinue )
+$Types = @( Get-ChildItem -Path "$ModuleRoot\Types\*.ps1" -ErrorAction SilentlyContinue )
 
 #Dot source the files
-Foreach ($import in @($Public + $Private + $Types)) {
-    Try {
+foreach ($import in @($Public + $Private + $Types))
+{
+    try
+    {
         Write-Verbose -Message "Importing $($import.fullname)"
         . $import.fullname
     }
-    Catch {
+    catch
+    {
         Write-Error -Message "Failed to import $($import.fullname): $_"
     }
 }
 
-Export-ModuleMember -Function ($Public | Select -ExpandProperty Basename)
+Export-ModuleMember -Function ($Public | Select-Object -ExpandProperty BaseName)

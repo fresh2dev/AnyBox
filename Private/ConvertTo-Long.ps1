@@ -1,4 +1,5 @@
-function ConvertTo-Long {
+function ConvertTo-Long
+{
     <#
     .SYNOPSIS
         "Melts" object(s) into an array of key-value pairs.
@@ -24,9 +25,11 @@ function ConvertTo-Long {
         [string]$ValueName = 'Value'
     )
     
-    process {
-        foreach ($o in $obj) {
-            $o.psobject.Properties | foreach { [pscustomobject]@{ $KeyName = $_.Name; $ValueName = $_.Value } }
+    process
+    {
+        foreach ($o in $obj)
+        {
+            $o.psobject.Properties | ForEach-Object { [pscustomobject]@{ $KeyName = $_.Name; $ValueName = $_.Value } }
         }
     }
 }
