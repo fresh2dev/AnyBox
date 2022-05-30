@@ -1,4 +1,20 @@
-Add-Type -ReferencedAssemblies 'System.Management.Automation.dll','System.Drawing.dll','WPF\PresentationFramework.dll','WPF\PresentationCore.dll','WPF\WindowsBase.dll','System.Xaml.dll' -TypeDefinition @"
+[string[]]$ReferencedAssemblies = $null
+
+if ($PSVersionTable.PSVersion.ToString().StartsWith('7.0.'))
+{
+    $ReferencedAssemblies = 'System.Management.Automation.dll', 'System.Drawing.dll', 'PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll', 'System.Xaml.dll'
+}
+elseif ($PSVersionTable.PSVersion.ToString().StartsWith('7.'))
+{
+    $PwshPath = Split-Path -Parent (Get-Command -Name 'pwsh').Path
+    $ReferencedAssemblies = "$PwshPath\System.Management.Automation.dll", "$PwshPath\System.Drawing.dll", "$PwshPath\PresentationFramework.dll", "$PwshPath\PresentationCore.dll", "$PwshPath\WindowsBase.dll", "$PwshPath\System.Xaml.dll"
+}
+else
+{
+    $ReferencedAssemblies = 'System.Management.Automation.dll', 'System.Drawing.dll', 'WPF\PresentationFramework.dll', 'WPF\PresentationCore.dll', 'WPF\WindowsBase.dll', 'System.Xaml.dll'
+}
+
+Add-Type -ErrorAction 'Stop' -ReferencedAssemblies $ReferencedAssemblies -TypeDefinition @'
 using System.Management.Automation;
 using System.Windows.Media;
 using System.Drawing;
@@ -92,4 +108,4 @@ namespace AnyBox
         public System.Management.Automation.ScriptBlock OnClick;
     }
 }
-"@ -ErrorAction 'Stop'
+'@
