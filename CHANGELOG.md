@@ -1,11 +1,13 @@
 # Changelog
 
-## v0.4.1 - 2022-05-30
+## v0.5.0 - 2022-05-31
 
 ### Added
 
 - compatibility with pwsh v7
-- aliases to support short-form invocation, e.g., `anybox -m 'hey' -b 'ok'`
+- function `ConvertTo-AnyBoxPrompts`, for building AnyBox prompts from function parameters
+- parameter `-PromptsFromFunc`, for displaying AnyBox of prompts for given function
+- aliases, e.g., `anybox -m hello -b hi` is `Show-AnyBox -Message hello -Button hi`
 
 ## v0.4.0 - 2019-06-11
 
@@ -116,6 +118,10 @@ New function `New-AnyBoxButton` (alias `New-Button`) to wrap around the new obje
 - `New-AnyBoxPrompt` function wrapper around the `AnyBox.Prompt` class. It includes a new parameter, `-MessagePosition`, which specifies whether to print the prompt message above or beside the input control (default='Top').
 - When `-GridData` is provided, DataGrid now fills all available space when window is resized.
 - `-GridAsList` parameter as a shortcut for `ConvertTo-Long`.
+
+### Fixed
+
+- Checkbox prompts were being initialized with string 'False' instead of boolean `False`
 
 ## v0.1 - 2018-03-06
 

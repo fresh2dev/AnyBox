@@ -45,7 +45,7 @@
     # RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    # RequiredAssemblies = 'System.Windows.Forms.dll', 'System.Drawing.dll', 'PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll'
+    RequiredAssemblies = 'System.Windows.Forms.dll', 'System.Drawing.dll', 'PresentationFramework.dll', 'PresentationCore.dll', 'WindowsBase.dll'
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess = ''
@@ -60,7 +60,14 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = @('Get-Base64', 'New-AnyBoxPrompt', 'New-AnyBoxButton', 'Show-AnyBox')
+    FunctionsToExport = @(
+        'Get-Base64',
+        'Get-DictSubset',
+        'New-AnyBoxPrompt',
+        'ConvertTo-AnyBoxPrompts',
+        'New-AnyBoxButton',
+        'Show-AnyBox'
+    )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport = @()
@@ -69,7 +76,11 @@
     VariablesToExport = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = @('anybox', 'New-Prompt', 'New-Button')
+    AliasesToExport = @(
+        'anybox',
+        'New-Prompt',
+        'New-Button'
+    )
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
@@ -84,8 +95,10 @@
         'Types\AnyBox.ps1',
         'Public\Show-AnyBox.ps1',
         'Public\New-AnyBoxPrompt.ps1',
+        'Public\ConvertTo-AnyBoxPrompts.ps1'
         'Public\New-AnyBoxButton.ps1',
         'Public\Get-Base64.ps1',
+        'Public\Get-DictSubset.ps1',
         'Private\ConvertTo-BitmapImage.ps1',
         'Private\ConvertTo-Long.ps1',
         'Private\New-TextBlock.ps1',
@@ -108,12 +121,12 @@
             ProjectUri = 'https://github.com/fresh2dev/AnyBox'
 
             # A URL to an icon representing this module.
-            # IconUri = ''
+            IconUri = 'https://fresh2.dev/favicon.ico'
 
             # ReleaseNotes of this module
             ReleaseNotes = 'https://github.com/fresh2dev/AnyBox/blob/main/CHANGELOG.md'
-        } # End of PSData hashtable
-    } # End of PrivateData hashtable
+        }
+    }
 
     # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
     # DefaultCommandPrefix = ''

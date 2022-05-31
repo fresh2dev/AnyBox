@@ -96,6 +96,10 @@ function Show-AnyBox
         [Alias('p', 'Prompt')]
         [object[]]$Prompts,
         [Parameter(ParameterSetName = 'create')]
+        [Alias('f', 'From')]
+        [string]$PromptsFromFunc,
+        [scriptblock]$PromptsFromScriptblock,
+        [Parameter(ParameterSetName = 'create')]
         [Alias('b', 'Btn', 'Button')]
         [object[]]$Buttons,
         [Parameter(ParameterSetName = 'create')]
@@ -124,8 +128,10 @@ function Show-AnyBox
         [uint16]$FontSize = 12,
         [Parameter(ParameterSetName = 'create')]
         [ValidateNotNullOrEmpty()]
+        [Alias('FgColor')]
         [System.Windows.Media.Brush]$FontColor = 'Black',
         [Parameter(ParameterSetName = 'create')]
+        [Alias('BgColor')]
         [System.Windows.Media.Brush]$BackgroundColor,
         [Parameter(ParameterSetName = 'create')]
         [System.Windows.Media.Brush]$AccentColor = 'Gainsboro',
@@ -219,6 +225,38 @@ function Show-AnyBox
     $form.Window = [Windows.Markup.XamlReader]::Load((New-Object System.Xml.XmlNodeReader $xaml))
     $xaml.SelectNodes('//*[@Name]').Name | ForEach-Object { $form.Add($_, $form.Window.FindName($_)) }
     $xaml = $null
+
+    if ($PromptsFromFunc)
+    {
+        $PromptsFromScriptblock = (Get-Command $PromptsFromFunc).ScriptBlock
+    }
+
+    if ($PromptsFromScriptblock)
+    {
+        [AnyBox.Prompt[]]$sb_prompts = ConvertTo-AnyBoxPrompts -ScriptBlock $PromptsFromScriptblock
+
+        foreach ($p in $sb_prompts)
+        {
+            $p.MessagePosition = [AnyBox.MessagePosition]::Left
+        }
+
+        if (-not $Prompts)
+        {
+            $Prompts = @()
+        }
+
+        $Prompts += $sb_prompts
+
+        if (-not $Title)
+        {
+            $Title = $PromptsFromScriptblock.Ast.Name
+        }
+
+        if (-not $Buttons)
+        {
+            $Buttons = @('Run')
+        }
+    }
 
     if ($MaxHeight -ge $MinHeight)
     {
@@ -525,6 +563,9 @@ function Show-AnyBox
                     $inBox.IsChecked = $($prmpt.DefaultValue -eq [bool]::TrueString)
                     $inBox.HorizontalAlignment = $prmpt.Alignment
                     $inBox.HorizontalContentAlignment = 'Left'
+
+                    # add with default value that is true boolean, not string
+                    $form.Result[$prmpt.Name] = $($prmpt.DefaultValue -eq [bool]::TrueString)
 
                     $inBox.add_Click({
                             $form.Result[$_.Source.Name] = $_.Source.IsChecked
