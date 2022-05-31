@@ -6,6 +6,7 @@ function Get-Base64
     .DESCRIPTION
         A base64 string can be passed to 'Show-Anybox' to show an image, which eliminates
         the reliance on the external file, making the script more easily portable.
+        Purposefully renamed from `ConvertTo-Base64` to `Get-Base64` to avoid conflicts w/ other pkgs.
     .PARAMETER ImagePath
         Specifies a path to one or more locations.
     .PARAMETER ImagePath

@@ -8,6 +8,7 @@
 - function `ConvertTo-AnyBoxPrompts`, for building AnyBox prompts from function parameters
 - parameter `-PromptsFromFunc`, for displaying AnyBox of prompts for given function
 - aliases, e.g., `anybox -m hello -b hi` is `Show-AnyBox -Message hello -Button hi`
+- added more examples and an interactive test
 
 ## v0.4.0 - 2019-06-11
 
