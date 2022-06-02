@@ -10,7 +10,7 @@ function ConvertTo-AnyBoxPrompts
 
     $ScriptBlock.Ast.Body.ParamBlock.Parameters | ForEach-Object {
         [string]$name = $_.Name.VariablePath.UserPath
-        $attrs = $_ | Select-Object -ExpandProperty Attributes
+        $attrs = @($_ | Select-Object -ExpandProperty Attributes)
         
         [bool]$mandatory = $false
         [bool]$not_null = $false
@@ -53,12 +53,12 @@ function ConvertTo-AnyBoxPrompts
             }
         }
 
-        $default = $attrs | Select-Object -ExpandProperty Parent -First 1 | Select-Object -ExpandProperty DefaultValue | Select-Object -ExpandProperty Value
+        $default = $attrs | Select-Object -ExpandProperty Parent -First 1 | Select-Object -ExpandProperty DefaultValue | Select-Object -ExpandProperty Value -EA 0
         
         $param_config = @{
             'InputType' = $input_type
             'Name' = $Key_Prefix + $name
-            'Message' = $name
+            'Message' = $name + ":"
             'ValidateNotEmpty' = ($mandatory -or $not_null)
             'ValidateScript' = $validate_script
             'ValidateSet' = $validate_set

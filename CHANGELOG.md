@@ -1,14 +1,29 @@
 # Changelog
 
-## v0.5.0 - 2022-05-31
+## v0.5.0 - 2022-06-01
 
 ### Added
 
 - compatibility with pwsh v7
 - function `ConvertTo-AnyBoxPrompts`, for building AnyBox prompts from function parameters
-- parameter `-PromptsFromFunc`, for displaying AnyBox of prompts for given function
-- aliases, e.g., `anybox -m hello -b hi` is `Show-AnyBox -Message hello -Button hi`
-- added more examples and an interactive test
+- parameter `-PromptsFromFunc` /  `-PromptsFromScriptblock` for displaying AnyBox of prompts for given function / scriptblock.
+- more examples and an interactive test
+- aliases:
+    - `show` = `Show-AnyBox`
+    - `anybox` = `Show-AnyBox`
+    - `-i` = `-Icon`
+    - `-t` = `-Title`
+    - `-m` = `-Messages`
+    - `-c` = `-Comments`
+    - `-b` = `-Buttons`
+    - `-p` = `-Prompts`
+    - `-d` = `-GridData`
+    - `-f` = `-PromptsFromFunc`
+    - `-pb` = `-ProgressBar`
+    - `-bg` = `-BackgroundColor`
+    - `-fg` = `-FontColor`
+    - `-sec` = `-Timeout`
+    - `-count` = `-Countdown`
 
 ## v0.4.0 - 2019-06-11
 

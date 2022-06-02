@@ -90,8 +90,8 @@ function Show-AnyBox
         [Parameter(ParameterSetName = 'create')]
         [string]$Image,
         [Parameter(ParameterSetName = 'create')]
-        [Alias('m', 'Msg')]
-        [string[]]$Message,
+        [Alias('m', 'Message')]
+        [string[]]$Messages,
         [Parameter(ParameterSetName = 'create')]
         [Alias('p', 'Prompt')]
         [object[]]$Prompts,
@@ -100,7 +100,7 @@ function Show-AnyBox
         [string]$PromptsFromFunc,
         [scriptblock]$PromptsFromScriptblock,
         [Parameter(ParameterSetName = 'create')]
-        [Alias('b', 'Btn', 'Button')]
+        [Alias('b', 'Button')]
         [object[]]$Buttons,
         [Parameter(ParameterSetName = 'create')]
         [string]$CancelButton,
@@ -110,9 +110,11 @@ function Show-AnyBox
         [ValidateScript({ $_ -gt 0 })]
         [uint16]$ButtonRows = 1,
         [Parameter(ParameterSetName = 'create')]
-        [string[]]$Comment,
+        [Alias('c', 'Comment')]
+        [string[]]$Comments,
         [Parameter(ParameterSetName = 'create')]
         [ValidateSet('Left', 'Center')]
+        [Alias('Alignment')]
         [string]$ContentAlignment = 'Left',
         [Parameter(ParameterSetName = 'create')]
         [switch]$CollapsibleGroups,
@@ -128,10 +130,10 @@ function Show-AnyBox
         [uint16]$FontSize = 12,
         [Parameter(ParameterSetName = 'create')]
         [ValidateNotNullOrEmpty()]
-        [Alias('FgColor')]
+        [Alias('fg')]
         [System.Windows.Media.Brush]$FontColor = 'Black',
         [Parameter(ParameterSetName = 'create')]
-        [Alias('BgColor')]
+        [Alias('bg')]
         [System.Windows.Media.Brush]$BackgroundColor,
         [Parameter(ParameterSetName = 'create')]
         [System.Windows.Media.Brush]$AccentColor = 'Gainsboro',
@@ -156,10 +158,13 @@ function Show-AnyBox
         [Parameter(ParameterSetName = 'create')]
         [switch]$HideTaskbarIcon,
         [Parameter(ParameterSetName = 'create')]
+        [Alias('sec')]
         [uint32]$Timeout,
         [Parameter(ParameterSetName = 'create')]
+        [Alias('count')]
         [switch]$Countdown,
         [Parameter(ParameterSetName = 'create')]
+        [Alias('pb')]
         [switch]$ProgressBar,
         [Parameter(ParameterSetName = 'create')]
         [scriptblock]$While,
@@ -168,6 +173,7 @@ function Show-AnyBox
         [Parameter(ParameterSetName = 'create')]
         [System.Windows.Window]$ParentWindow = $null,
         [Parameter(ParameterSetName = 'create')]
+        [Alias('d')]
         [object[]]$GridData,
         [Parameter(ParameterSetName = 'create')]
         [switch]$GridAsList,
@@ -353,7 +359,7 @@ function Show-AnyBox
     }
 
     # Add message textblocks.
-    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -Text $($Message -join [environment]::NewLine) -Name 'Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -Text $($Messages -join [environment]::NewLine) -Name 'Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
     {
         $form.highStack.AddChild($txtMsg)
     }
@@ -565,7 +571,7 @@ function Show-AnyBox
                     $inBox.HorizontalContentAlignment = 'Left'
 
                     # add with default value that is true boolean, not string
-                    $form.Result[$prmpt.Name] = $($prmpt.DefaultValue -eq [bool]::TrueString)
+                    $form.Result[$prmpt.Name] = $inBox.IsChecked
 
                     $inBox.add_Click({
                             $form.Result[$_.Source.Name] = $_.Source.IsChecked
@@ -1163,7 +1169,7 @@ function Show-AnyBox
     }
 
     # Add comment textblocks.
-    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comments -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
     {
         $txtMsg.FontStyle = 'Italic'
         $txtMsg.FontWeight = 'Normal'
@@ -1513,3 +1519,4 @@ $form.Result | Foreach-Object -Process {{
 }
 
 Set-Alias -Name 'anybox' -Value 'Show-AnyBox' -Description 'Show-AnyBox' -Scope 'Global'
+Set-Alias -Name 'show' -Value 'Show-AnyBox' -Description 'Show-AnyBox' -Scope 'Global'

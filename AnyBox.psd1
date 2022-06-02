@@ -3,7 +3,7 @@
     ModuleToProcess = 'AnyBox.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.4.1'
+    ModuleVersion = '0.5.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = 'Desktop'
@@ -92,6 +92,7 @@
     FileList = @(
         'AnyBox.psd1',
         'AnyBox.psm1',
+        'Types\AnyBox.cs',
         'Types\AnyBox.ps1',
         'Public\Show-AnyBox.ps1',
         'Public\New-AnyBoxPrompt.ps1',

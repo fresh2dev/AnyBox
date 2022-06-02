@@ -27,13 +27,13 @@ function Get-Greeting
 
 [string]$func_name = 'Get-Greeting'
 
-[hashtable]$params = @{
+[hashtable]$style = @{
     Title = $func_name
     Button = 'OK'
     MinWidth = 300
 }
 
-[hashtable]$resp = Show-AnyBox @params -PromptsFromFunc $func_name
+[hashtable]$resp = Show-AnyBox @style -PromptsFromFunc $func_name
 
 if ($resp['OK'])
 {
@@ -41,5 +41,5 @@ if ($resp['OK'])
 
     [string]$msg = & (Get-Command $func_name).ScriptBlock @func_params
 
-    $null = Show-AnyBox @params -Message $msg
+    $null = Show-AnyBox @style -Message $msg
 }
