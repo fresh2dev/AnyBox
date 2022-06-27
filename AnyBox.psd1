@@ -3,7 +3,7 @@
     ModuleToProcess = 'AnyBox.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.5.0'
+    ModuleVersion = '0.5.1'
 
     # Supported PSEditions
     # CompatiblePSEditions = 'Desktop'
@@ -12,16 +12,16 @@
     GUID = '2d4d8fd0-36c3-48e9-b6ac-48df0f9bc7ab'
 
     # Author of this module
-    Author = 'fresh2dev'
+    Author = 'Fresh2dev'
 
     # Company or vendor of this module
     # CompanyName = 'Unknown'
 
     # Copyright statement for this module
-    Copyright = '(c) 2022 fresh2.dev'
+    Copyright = '(c) 2022 Fresh2.dev'
 
     # Description of the functionality provided by this module
-    Description = 'Designed to facilitate script input/output with an easily customizable WPF window.'
+    Description = 'The easiest way to develop apps for Windows.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '3.0'
