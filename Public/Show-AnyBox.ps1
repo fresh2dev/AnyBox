@@ -90,8 +90,8 @@ function Show-AnyBox
         [Parameter(ParameterSetName = 'create')]
         [string]$Image,
         [Parameter(ParameterSetName = 'create')]
-        [Alias('m', 'Message')]
-        [string[]]$Messages,
+        [Alias('m')]
+        [string[]]$Message,
         [Parameter(ParameterSetName = 'create')]
         [Alias('p', 'Prompt')]
         [object[]]$Prompts,
@@ -110,8 +110,8 @@ function Show-AnyBox
         [ValidateScript({ $_ -gt 0 })]
         [uint16]$ButtonRows = 1,
         [Parameter(ParameterSetName = 'create')]
-        [Alias('c', 'Comment')]
-        [string[]]$Comments,
+        [Alias('c')]
+        [string[]]$Comment,
         [Parameter(ParameterSetName = 'create')]
         [ValidateSet('Left', 'Center')]
         [Alias('Alignment')]
@@ -359,7 +359,7 @@ function Show-AnyBox
     }
 
     # Add message textblocks.
-    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -Text $($Messages -join [environment]::NewLine) -Name 'Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -Text $($Message -join [environment]::NewLine) -Name 'Message' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
     {
         $form.highStack.AddChild($txtMsg)
     }
@@ -1169,7 +1169,7 @@ function Show-AnyBox
     }
 
     # Add comment textblocks.
-    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comments -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
+    if (($txtMsg = New-TextBlock -RefForm ([ref]$form) -text $($Comment -join [environment]::NewLine) -name 'txt_Explain' -FontFamily $FontFamily -FontSize $FontSize -FontColor $FontColor -ContentAlignment $ContentAlignment))
     {
         $txtMsg.FontStyle = 'Italic'
         $txtMsg.FontWeight = 'Normal'

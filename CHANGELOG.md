@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.1 - 2022-06-26
+
+### Fixed
+
+- missing messages, comments when using .NET style API. [#21](https://github.com/fresh2dev/AnyBox/issues/21)
+
 ## v0.5.0 - 2022-06-01
 
 ### Added
