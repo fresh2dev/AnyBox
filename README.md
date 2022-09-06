@@ -35,7 +35,7 @@ anybox -m 'Wicked cool?' -b 'No', 'Yes'
 ```
 
 AnyBox will build and display this form:
-![[img/quick-start-01.png]]
+![quick-start-01.png](/img/quick-start-01.png)
 
 The window exits when a button is clicked, returning a hashtable that contains user input. Each button is a key in the table. A value of `True` indicates the button was clicked, else `False`.
 
@@ -69,7 +69,7 @@ anybox -m $msg -b 'OK'
 ```
 
 If you made the correct choice, AnyBox will present:
-![[img/quick-start-02.png]]
+![quick-start-02.png](/img/quick-start-02.png)
 
 This example demonstrates the pattern that AnyBox was built for:
 ```
@@ -93,7 +93,7 @@ Let's start with the simplest example; the standard message box:
 Show-AnyBox -Title 'AnyBox Demo' -Message 'Hello world' -Buttons 'Hi' -MinWidth 300
 ```
 
-![[img/messages-standard.png]]
+![messages-standard.png](/img/messages-standard.png)
 
 The `-Message` parameter accepts an array of strings to print, each separated by a new line.
 
@@ -101,7 +101,7 @@ The `-Message` parameter accepts an array of strings to print, each separated by
 Show-AnyBox -Icon 'Question' -Title 'AnyBox Demo' -Message 'Hello world', 'Are you ready?' -Buttons 'No', 'Yes' -MinWidth 300
 ```
 
-![[img/messages-array-input.png]]
+![messages-array-input.png](/img/messages-array-input.png)
 
 Similar to `-Message` is `-Comment`, which will include a text block in italics near the bottom of the AnyBox.
 
@@ -109,7 +109,7 @@ Similar to `-Message` is `-Comment`, which will include a text block in italics 
 Show-AnyBox -Message 'Provide your name:' -Prompt '' -Comment 'First name only' -Buttons 'OK'
 ```
 
-![[img/messages-comment.png]]
+![messages-comment.png](/img/messages-comment.png)
 
 
 ## Prompts
@@ -149,7 +149,7 @@ Since v0.3.0, prompts are now even easier to create. Instead of using  `New-AnyB
 Show-AnyBox -Prompt '' -Buttons 'Submit'
 ```
 
-![[img/prompt-text-simplest.png]]
+![prompt-text-simplest.png](/img/prompt-text-simplest.png)
 
 ```
 Name		Value
@@ -181,7 +181,7 @@ Show-AnyBox -Prompt $prompt -Buttons 'Cancel', 'Execute' -CancelButton 'Cancel' 
   -ContentAlignment 'Left' -MinWidth 300
 ```
 
-![[img/prompt-text-multiline.png]]
+![prompt-text-multiline.png](/img/prompt-text-multiline.png)
 
 #### Validate
 Getting user input is not the only struggle. Often, a bigger struggle is validating the user input we get. AnyBox aims to make that simpler by use of any of three prompt options:
@@ -202,7 +202,7 @@ $prompt = New-AnyBoxPrompt -Name 'fav_sport' `
 Show-AnyBox -Icon 'Question' -Prompt $prompt -Buttons 'OK'
 ```
 
-![[img/prompt-validate-dropdown.png]]
+![prompt-validate-dropdown.png](/img/prompt-validate-dropdown.png)
 
 ```
 Name                           Value
@@ -221,7 +221,7 @@ $prompts += @(New-Prompt -Message 'Radio Wide' -ValidateSet 'one', 'two', 'three
 Show-AnyBox -Prompts $prompts -Buttons 'one', 'two', 'three'
 ```
 
-![[img/prompt-validate-radio-buttons.png]]
+![prompt-validate-radio-buttons.png](/img/prompt-validate-radio-buttons.png)
 
 With  `-ValidateScript`, the options are endless. If the script block you provide returns  `$true`, the user input is considered valid.
 
@@ -232,7 +232,7 @@ $prompt = New-AnyBoxPrompt -Message 'Enter any number between 0 and 100:' `
 Show-AnyBox -Prompt $prompt -Buttons 'Submit'
 ```
 
-![[img/prompt-validate-script.png]]
+![prompt-validate-script.png](/img/prompt-validate-script.png)
 
 ### InputType.File\[Open|Save\]
 The input types  `FileOpen`  and  `FileSave`  are similar to  `Text`, with the addition of a button to the left of the textbox that opens either a  [OpenFileDialog](https://i-msdn.sec.s-msft.com/dynimg/IC394014.jpeg)  or  [SaveFileDialog](https://i-msdn.sec.s-msft.com/dynimg/IC394015.jpeg)  window, respectively.
@@ -245,7 +245,7 @@ Show-AnyBox -MinWidth 350 -Buttons 'Cancel', 'Submit' -Prompt @(
 )
 ```
 
-![[img/prompt-file-input.png]]
+![prompt-file-input.png](/img/prompt-file-input.png)
 
 ### InputType.Password
 When the  `Password`  input type is specified, the user is presented a  [PasswordBox](https://msdn.microsoft.com/en-us/library/system.windows.controls.passwordbox%28v=vs.110%29.aspx)  instead of a  [TextBox](https://msdn.microsoft.com/en-us/library/system.windows.controls.textbox%28v=vs.110%29.aspx), so the password is masked and returned as a security string.
@@ -257,7 +257,7 @@ Show-AnyBox -Buttons 'Cancel', 'Login' -Prompt @(
 )
 ```
 
-![[img/prompt-password-field.png]]
+![prompt-password-field.png](/img/prompt-password-field.png)
 
 ```
 Name	Value
@@ -277,7 +277,7 @@ Show-AnyBox -Icon 'Question' -Buttons 'Cancel', 'Ignore' `
 	-Prompts (New-AnyBoxPrompt -InputType 'Checkbox' -Message "Don't ask again." -DefaultValue $true)
 ```
 
-![[img/prompt-checkbox.png]]
+![prompt-checkbox.png](/img/prompt-checkbox.png)
 
 ### InputType.Date
 The  `Date`  input is also fairly straightforward:
@@ -289,9 +289,9 @@ $p = New-AnyBoxPrompt -InputType 'Date' -Message 'Show all events after:' `
 Show-AnyBox -Buttons 'OK' -Prompt $p
 ```
 
-![[img/prompt-date-input.png]]
+![prompt-date-input.png](/img/prompt-date-input.png)
 
-![[img/prompt-date-input-calendar.png]]
+![prompt-date-input-calendar.png](/img/prompt-date-input-calendar.png)
 
 ### InputType.Link
 The last of the available input types is  `Link`. This type has some unique, useful behavior that is unlike the others. When specified, the user is presented with a link that, when clicked, can open a web url, a directory, or launch a program.
@@ -315,11 +315,11 @@ Input_0   False
 Input_1   True
 ```
 
-![[img/prompt-link-input.png]]
+![prompt-link-input.png](/img/prompt-link-input.png)
 
 If  `-ValidateNotEmpty`  is specified, the user will be forced to click the link before proceeding.
 
-![[img/prompt-link-input-validate.png]]
+![prompt-link-input-validate.png](/img/prompt-link-input-validate.png)
 
 ### Prompt Example
 Prompts can be built dynamically. Here is a quick example:
@@ -337,7 +337,7 @@ $buttons = 1..6 | foreach {
 $answer = Show-AnyBox -Prompt $prompts -Buttons $buttons -ButtonRows 2 -MinWidth 400
 ```
 
-![[img/prompt-example.png]]
+![prompt-example.png](/img/prompt-example.png)
 
 ```PowerShell
 PS C:\> $answer
@@ -384,7 +384,7 @@ $prompts += @(New-Prompt -Message 'The other' -Collapsible)
 Show-AnyBox -Prompts $prompts -Buttons 'OK'
 ```
 
-![[img/prompt-collapsable.png]]
+![prompt-collapsable.png](/img/prompt-collapsable.png)
 
 AnyBox v0.3.0 introduces several ways to separate and/or group prompts. The most basic way is to specify the  `-ShowSeparator`  switch which, when specified, prints a horizontal line below the prompt. The  `-Group`  switch accepts a string and groups prompts that have the same group name. If the provided group name contains no word characters (e.g., only digits), the group name is not printed; otherwise, it will be printed. Similarly,  `-Tab`  accepts a string and shows prompts with the same tab name in the specified tab. Here’s an example showcasing each of these new options.
 
@@ -403,7 +403,7 @@ $prompts += @(New-Prompt -Tab 'ThatTab' -Message 'Prompt 10:')
 Show-AnyBox -Prompts $prompts -Buttons 'Cancel', 'Continue' -AccentColor 'Gray'
 ```
 
-![[img/prompt-show-separator.png]]
+![prompt-show-separator.png](/img/prompt-show-separator.png)
 
 Notice the use of  `-AccentColor`  in the call to  `Show-AnyBox`. This parameter can be used to specify the color of the lines for the separator lines, group box lines, etc.
 
@@ -413,7 +413,7 @@ Similar to the  `-Collapsible`  switch for a prompt, an entire prompt group can 
 Show-AnyBox -Prompts $prompts -Buttons 'Cancel', 'Continue' -AccentColor 'CornflowerBlue' -CollapsibleGroups
 ```
 
-![[img/prompt-accent-color.png]]
+![prompt-accent-color.png](/img/prompt-accent-color.png)
 
 
 ## Buttons
@@ -423,7 +423,7 @@ Any number of buttons can be added using the `-Buttons` parameter like so:
 Show-AnyBox -Message 'Select one:' -Buttons 'This', 'That', 'Other'
 ```
 
-![[img/simple-btns.png]]
+![simple-btns.png](/img/simple-btns.png)
 
 The result returned from an AnyBox is a hashtable that contains what input was received. For buttons, the name of the key in the hashtable is the name of the button; the value indicates whether or not that button was selected.
 
@@ -441,7 +441,7 @@ The button layout can also be altered using the `-ButtonRows` parameter.
 Show-AnyBox -Title 'AnyBox Demo' -Message 'Select a number:' -Buttons @(1..9) -ButtonRows 3
 ```
 
-![[img/num-btn-rows.png]]
+![num-btn-rows.png](/img/num-btn-rows.png)
 
 As you will soon see, user input can be validated within the AnyBox, and the user will be unable to proceed until valid input is entered. The `-CancelButton` parameter accepts a single button name to designate as the _cancel_ button. The cancel button closes the window without validating input. It is also selected if the user presses the 'ESC' key on the keyboard.
 
@@ -452,7 +452,7 @@ Show-AnyBox -Message 'Enter anything:' -Prompt (New-AnyBoxPrompt -ValidateNotEmp
   -Buttons 'Cancel', 'Submit' -CancelButton 'Cancel' -DefaultButton 'Submit'
 ```
 
-![[img/cancel-default-btn.png]]
+![cancel-default-btn.png](/img/cancel-default-btn.png)
 
 New to v0.3.0, using `New-AnyBoxButton` (a.k.a. `New-Button`) to create the button, you can specify `-Name` which allows you to create a unique identifier for the button, instead of relying only on the button's content for this. Button content is specified with `-Text`, and a button can be designated as the cancel/default button using `-IsCancel` or `-IsDefault`, respectively. Simple enough. However, a very powerful option is the new `-OnClick` parameter, which accepts and runs a provided script block when the button is clicked. This way, you don't have to wait for the window to close before receiving and acting on user input. User input is accessible in the `-OnClick` script via the variable `$_`.
 
@@ -486,7 +486,7 @@ $b += @(New-Button -Name 'Greeting' -Text 'Get Greeting' -OnClick {
 $null = Show-AnyBox -Prompts $p -Buttons $b
 ```
 
-![[img/onclick-btn.png]]
+![onclick-btn.png](/img/onclick-btn.png)
 
 Two noteworthy mentions, shown in the code above, are:
 
@@ -521,7 +521,7 @@ Show-AnyBox -Title 'Powershell Processes' -Buttons 'OK' -GridData @(
 )
 ```
 
-![[img/grid-data.png]]
+![grid-data.png](/img/grid-data.png)
 
 You may notice a few useful additions that are included automatically. Above the data grid is a message indicating how many items are in the grid, and a text box that allows users to filter the grid items. This can be disabled using the `-NoGridSearch` parameter.
 
@@ -538,7 +538,7 @@ Show-AnyBox -Title 'Powershell Processes' -Buttons @($exp_btn, $sav_btn) -GridDa
 )
 ```
 
-![[img/grid-data-btns.png]]
+![grid-data-btns.png](/img/grid-data-btns.png)
 
 The parameter `-SelectionMode` is available for the data grid and controls how grid cells are selected. Selected grid items are made available in the AnyBox output via the 'grid_select' key.
 
@@ -548,7 +548,7 @@ Show-AnyBox -Title 'Select processes to kill' `
 -GridData @(Get-Process -Name '*note*' | select Id, Name, TotalProcessorTime, Path)
 ```
 
-![[img/grid-select.png]]
+![grid-select.png](/img/grid-select.png)
 
 ```
 Name             Value
@@ -564,13 +564,13 @@ Sometimes, you may find that you only have one object with many properties to di
 Show-AnyBox -Title 'Wide (as-is)' -Buttons 'OK' -NoGridSearch -GridData $car
 ```
 
-![[img/grid-wide.png]]
+![grid-wide.png](/img/grid-wide.png)
 
 ```powershell
 Show-AnyBox -Buttons 'OK' -NoGridSearch -GridData $car -GridAsList
 ```
 
-![[img/grid-long.png]]
+![grid-long.png](/img/grid-long.png)
 
 
 ## Personalization
@@ -589,7 +589,7 @@ Show-AnyBox @font -WindowStyle 'None' -Message 'Hello World', 'Are you ready?' -
   -BackgroundColor 'Black' -Image '.\banner.png'
 ```
 
-![[img/personal-box.png]]
+![personal-box.png](/img/personal-box.png)
 
 By using a base64 string representing the image, you can save and reuse the string without worrying about whether or not the image file is accessible. For convenience, the AnyBox module includes a function `ConvertTo-Base64` which accepts the path to an image file as input, and returns the base64 representation of it.
 
@@ -598,21 +598,21 @@ By using a base64 string representing the image, you can save and reuse the stri
 Since AnyBox uses the default Windows modal, all of the `System.Window.WindowStyle` options are available:
 -   None
 
-![[img/style-none.png]]
+![style-none.png](/img/style-none.png)
 
 -   Single Border Window
 
-![[img/style-singleborder.png]]
+![style-singleborder.png](/img/style-singleborder.png)
 
 -   3D Border Window
 
 See: [https://stackoverflow.com/a/7482728](https://stackoverflow.com/a/7482728)
 
-![[img/style-threeD.png]]
+![style-threeD.png](/img/style-threeD.png)
 
 -   Tool Window
 
-![[img/style-tool.png]]
+![style-tool.png](/img/style-tool.png)
 
 Similarly, all `System.Windows.ResizeMode` options are available (detailed [here](https://msdn.microsoft.com/en-us/library/system.windows.window.resizemode%28v=vs.110%29.aspx)). ~~However, because the AnyBox works by using a `StackPanel` to stack the controls atop one another, no vertical resizing is possible; only horizontal resizing. For this reason, it may be best to stick with `NoResize` or `CanMinimize`, since maximizing the window will look odd. Also, consider using the `ToolWindow` style, which omits all but the ‘exit’ button.~~
 
@@ -629,7 +629,7 @@ Lastly, the AnyBox has a timeout feature that will close the window after the sp
 
 The switch parameter `-Countdown` will show a countdown in the AnyBox.
 
-![[img/countdown.png]]
+![countdown.png](/img/countdown.png)
 
 ```
 Name         Value
