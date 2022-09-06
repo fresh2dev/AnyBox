@@ -35,6 +35,7 @@ anybox -m 'Wicked cool?' -b 'No', 'Yes'
 ```
 
 AnyBox will build and display this form:
+
 ![quick-start-01.png](/img/quick-start-01.png)
 
 The window exits when a button is clicked, returning a hashtable that contains user input. Each button is a key in the table. A value of `True` indicates the button was clicked, else `False`.
@@ -69,6 +70,7 @@ anybox -m $msg -b 'OK'
 ```
 
 If you made the correct choice, AnyBox will present:
+
 ![quick-start-02.png](/img/quick-start-02.png)
 
 This example demonstrates the pattern that AnyBox was built for:
